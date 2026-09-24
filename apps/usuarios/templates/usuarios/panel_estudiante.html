@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titulo %}Panel Estudiante · Net Bean{% endblock %}
+
+{% block contenido %}
+<section class="hero">
+  <div class="row align-items-center">
+    <div class="col-lg-9 hero-contenido">
+      <h1>Hola, {{ user.username }} 👋</h1>
+      <p>Bienvenido a tu panel de estudiante. Aquí verás tu progreso y los módulos disponibles.</p>
+    </div>
+    <div class="col-lg-3 text-end d-none d-lg-block">
+      <i class="bi bi-mortarboard-fill hero-icono"></i>
+    </div>
+  </div>
+</section>
+
+<h2 class="seccion-titulo">
+  <i class="bi bi-grid-3x3-gap-fill"></i> Módulos disponibles
+</h2>
+
+{% for categoria in categorias %}
+  <section class="categoria-card">
+    <div class="categoria-header">
+      <div class="categoria-icono"><i class="bi bi-bookmark-star-fill"></i></div>
+      <h3 class="categoria-titulo">{{ categoria.nombre }}</h3>
+    </div>
+    <p class="categoria-descripcion">{{ categoria.descripcion }}</p>
+    <ul class="modulos-lista">
+      {% for modulo in categoria.modulos.all %}
+        {% if modulo.activo %}
+          <li class="modulo-item">
+            <h4 class="modulo-nombre">
+              <span class="modulo-orden">{{ modulo.orden }}</span>
+              {{ modulo.nombre }}
+            </h4>
+            <p class="modulo-descripcion">{{ modulo.descripcion }}</p>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </section>
+{% empty %}
+  <div class="estado-vacio">
+    <i class="bi bi-inbox"></i>
+    <h3>No hay categorías activas</h3>
+    <p>Vuelve pronto para ver nuevos módulos.</p>
+  </div>
+{% endfor %}
+{% endblock %}

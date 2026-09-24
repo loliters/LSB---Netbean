@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block titulo %}Registro · Net Bean{% endblock %}
+
+{% block contenido %}
+<div class="auth-card">
+  <div class="auth-header">
+    <div class="auth-icono">
+      <i class="bi bi-person-plus-fill"></i>
+    </div>
+    <h2>Crea tu cuenta</h2>
+    <p>Únete y empieza a aprender lengua de señas</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <ul class="errorlist">
+        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="mb-3">
+      <label for="{{ form.username.id_for_label }}">
+        <i class="bi bi-person-fill me-1"></i> Nombre de usuario
+      </label>
+      {{ form.username }}
+      {% if form.username.errors %}
+        <ul class="errorlist">
+          {% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.correo.id_for_label }}">
+        <i class="bi bi-envelope-fill me-1"></i> Correo electrónico
+      </label>
+      {{ form.correo }}
+      {% if form.correo.errors %}
+        <ul class="errorlist">
+          {% for error in form.correo.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.password1.id_for_label }}">
+        <i class="bi bi-key-fill me-1"></i> Contraseña
+      </label>
+      {{ form.password1 }}
+      {% if form.password1.errors %}
+        <ul class="errorlist">
+          {% for error in form.password1.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="{{ form.password2.id_for_label }}">
+        <i class="bi bi-key-fill me-1"></i> Confirmar contraseña
+      </label>
+      {{ form.password2 }}
+      {% if form.password2.errors %}
+        <ul class="errorlist">
+          {% for error in form.password2.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn-primario">
+      <i class="bi bi-check-circle-fill me-2"></i> Crear cuenta
+    </button>
+  </form>
+
+  <p class="auth-footer">
+    ¿Ya tienes cuenta?
+    <a href="{% url 'usuarios:login' %}">Inicia sesión</a>
+  </p>
+</div>
+{% endblock %}

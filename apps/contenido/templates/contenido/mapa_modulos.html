@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Módulos · Net Bean{% endblock %}
+
+{% block contenido %}
+
+<section class="hero">
+  <div class="row align-items-center">
+    <div class="col-lg-9 hero-contenido">
+      <h1>Aprende Lengua de Señas</h1>
+      <p>Explora nuestras categorías y módulos diseñados para que domines el lenguaje de señas paso a paso con ayuda de inteligencia artificial.</p>
+    </div>
+    <div class="col-lg-3 text-end d-none d-lg-block">
+     <i class="bi bi-hand-index-thumb-fill hero-icono"></i>
+    </div>
+  </div>
+</section>
+
+<h2 class="mb-4" style="font-weight:700; color:var(--color-texto);">
+  <i class="bi bi-grid-3x3-gap-fill me-2" style="color:var(--color-primario);"></i>
+  Categorías disponibles
+</h2>
+
+{% for categoria in categorias %}
+  <section class="categoria-card">
+    <div class="categoria-header">
+      <div class="categoria-icono">
+        <i class="bi bi-bookmark-star-fill"></i>
+      </div>
+      <div>
+        <h3 class="categoria-titulo">{{ categoria.nombre }}</h3>
+      </div>
+    </div>
+    <p class="categoria-descripcion">{{ categoria.descripcion }}</p>
+
+    <ul class="modulos-lista">
+      {% for modulo in categoria.modulos %}
+        <li class="modulo-item">
+          <h4 class="modulo-nombre">
+            <span class="modulo-orden">{{ modulo.orden }}</span>
+            {{ modulo.nombre }}
+          </h4>
+          <p class="modulo-descripcion">{{ modulo.descripcion }}</p>
+        </li>
+      {% empty %}
+        <li class="modulo-descripcion">Sin módulos disponibles.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% empty %}
+  <div class="estado-vacio">
+    <i class="bi bi-inbox"></i>
+    <h3>No hay categorías activas</h3>
+    <p>Aún no se han publicado módulos. Vuelve pronto.</p>
+  </div>
+{% endfor %}
+
+{% endblock %}

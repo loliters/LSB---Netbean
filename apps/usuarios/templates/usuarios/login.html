@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión · Net Bean{% endblock %}
+
+{% block contenido %}
+<div class="auth-card">
+  <div class="auth-header">
+    <div class="auth-icono">
+      <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    <h2>Bienvenido de nuevo</h2>
+    <p>Inicia sesión para continuar tu aprendizaje</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <ul class="errorlist">
+        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="mb-3">
+      <label for="{{ form.identificador.id_for_label }}">
+        <i class="bi bi-person-fill me-1"></i> Usuario o correo
+      </label>
+      {{ form.identificador }}
+      {% if form.identificador.errors %}
+        <ul class="errorlist">
+          {% for error in form.identificador.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label for="{{ form.password.id_for_label }}">
+        <i class="bi bi-key-fill me-1"></i> Contraseña
+      </label>
+      {{ form.password }}
+      {% if form.password.errors %}
+        <ul class="errorlist">
+          {% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn-primario">
+      <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
+    </button>
+  </form>
+
+  <p class="auth-footer">
+    ¿No tienes cuenta?
+    <a href="{% url 'usuarios:registro' %}">Regístrate aquí</a>
+  </p>
+</div>
+{% endblock %}

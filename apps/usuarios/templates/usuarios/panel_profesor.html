@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titulo %}Panel Profesor · Net Bean{% endblock %}
+
+{% block contenido %}
+<section class="hero">
+  <div class="row align-items-center">
+    <div class="col-lg-9 hero-contenido">
+      <h1>Panel del Profesor</h1>
+      <p>Gestiona el contenido pedagógico y revisa el avance de tus estudiantes.</p>
+    </div>
+    <div class="col-lg-3 text-end d-none d-lg-block">
+      <i class="bi bi-easel-fill hero-icono"></i>
+    </div>
+  </div>
+</section>
+
+<h2 class="seccion-titulo"><i class="bi bi-bar-chart-fill"></i> Resumen del contenido</h2>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="categoria-card text-center">
+      <div class="categoria-icono mx-auto mb-3"><i class="bi bi-bookmark-fill"></i></div>
+      <h3 class="display-6 text-center">{{ total_categorias }}</h3>
+      <p class="text-center text-muted mb-0">Categorías</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="categoria-card text-center">
+      <div class="categoria-icono mx-auto mb-3"><i class="bi bi-collection-fill"></i></div>
+      <h3 class="display-6 text-center">{{ total_modulos }}</h3>
+      <p class="text-center text-muted mb-0">Módulos</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
