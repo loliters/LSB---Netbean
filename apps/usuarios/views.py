@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, render
 
 from apps.contenido.models import Categoria, Modulo
+from apps.core.models import Rol  # <-- Agregamos este import necesario
 
 from .decoradores import rol_requerido
 from .forms import LoginForm, RegistroForm
@@ -10,9 +11,11 @@ from .models import Usuario
 
 def _redirigir_por_rol(usuario):
     """Devuelve la redirección al panel según el rol."""
-    if usuario.es_administrador:
+    # Comparamos el nombre del rol en minúsculas (ya que ahora es un objeto ForeignKey)
+    rol_nombre = usuario.rol.nombre_rol.lower()
+    if rol_nombre == 'administrador':
         return redirect('usuarios:panel_admin')
-    if usuario.es_profesor:
+    if rol_nombre == 'profesor':
         return redirect('usuarios:panel_profesor')
     return redirect('usuarios:panel_estudiante')
 
@@ -24,9 +27,10 @@ def login_view(request):
 
     form = LoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
+        # ¡CORRECCIÓN 1! Usamos 'correo' en lugar de 'username' para autenticar
         usuario = authenticate(
             request,
-            username=form.cleaned_data['identificador'],
+            correo=form.cleaned_data['identificador'],
             password=form.cleaned_data['password'],
         )
         if usuario is not None:
@@ -51,7 +55,12 @@ def registro_view(request):
     form = RegistroForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         usuario = form.save(commit=False)
-        usuario.rol = Usuario.Rol.ESTUDIANTE
+        
+        # ¡CORRECCIÓN 2! Asignamos el objeto Rol real de la base de datos, 
+        # no un atributo inexistente como Usuario.Rol.ESTUDIANTE
+        rol_estudiante = Rol.objects.get(nombre_rol='Estudiante')
+        usuario.rol = rol_estudiante
+        
         usuario.save()
         login(request, usuario)
         return redirect('usuarios:panel_estudiante')
@@ -85,8 +94,9 @@ def panel_admin(request):
     """Panel del administrador: métricas globales."""
     return render(request, 'usuarios/panel_admin.html', {
         'total_usuarios': Usuario.objects.count(),
-        'total_estudiantes': Usuario.objects.filter(rol='ESTUDIANTE').count(),
-        'total_profesores': Usuario.objects.filter(rol='PROFESOR').count(),
+        # ¡CORRECCIÓN 3! Filtramos usando la relación del ForeignKey (rol__nombre_rol)
+        'total_estudiantes': Usuario.objects.filter(rol__nombre_rol='Estudiante').count(),
+        'total_profesores': Usuario.objects.filter(rol__nombre_rol='Profesor').count(),
         'total_categorias': Categoria.objects.count(),
         'total_modulos': Modulo.objects.count(),
     })

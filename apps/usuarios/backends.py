@@ -5,22 +5,28 @@ Usuario = get_user_model()
 
 
 class CorreoBackend(ModelBackend):
-    """Permite autenticar con username o correo."""
+    """Permite autenticar usando el campo 'correo'."""
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        if username is None:
-            username = kwargs.get(Usuario.USERNAME_FIELD)
-        if username is None or password is None:
+        # Tomamos el valor si viene como 'correo' (desde views.py) o como 'username' (por compatibilidad)
+        identificador = kwargs.get('correo') or username
+        
+        if identificador is None or password is None:
             return None
 
         try:
-            user = Usuario.objects.get(username=username)
+            # ¡CORRECCIÓN! Buscamos directamente por el campo 'correo'
+            user = Usuario.objects.get(correo=identificador)
         except Usuario.DoesNotExist:
-            try:
-                user = Usuario.objects.get(correo=username)
-            except Usuario.DoesNotExist:
-                return None
+            return None
 
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
+        
         return None
+
+    def get_user(self, user_id):
+        try:
+            return Usuario.objects.get(pk=user_id)
+        except Usuario.DoesNotExist:
+            return None
