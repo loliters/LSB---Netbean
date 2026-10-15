@@ -26,6 +26,8 @@ local_settings.py
 .DS_Store
 *.swp
 *.swo
+# Bd
+*.sql
 
 # Scripts temporales
 reset_db.py
