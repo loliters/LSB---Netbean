@@ -1,57 +1,38 @@
 {% extends "base.html" %}
 {% block titulo %}Módulos · Net Bean{% endblock %}
+{% block titulo_pagina %}Módulos{% endblock %}
 
 {% block contenido %}
-
-<section class="hero">
-  <div class="row align-items-center">
-    <div class="col-lg-9 hero-contenido">
-      <h1>Aprende Lengua de Señas</h1>
-      <p>Explora nuestras categorías y módulos diseñados para que domines el lenguaje de señas paso a paso con ayuda de inteligencia artificial.</p>
-    </div>
-    <div class="col-lg-3 text-end d-none d-lg-block">
-     <i class="bi bi-hand-index-thumb-fill hero-icono"></i>
-    </div>
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Módulos</h1>
+    <p class="texto-suave">Elige un módulo para ver sus lecciones y practicar cada seña.</p>
   </div>
-</section>
+  <form class="buscador" method="get" role="search">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <label class="visually-hidden" for="buscar">Buscar módulos</label>
+    <input id="buscar" type="search" name="q" value="{{ busqueda }}" placeholder="Buscar módulos">
+    {% if dificultad_actual %}<input type="hidden" name="dificultad" value="{{ dificultad_actual }}">{% endif %}
+  </form>
+</header>
 
-<h2 class="mb-4" style="font-weight:700; color:var(--color-texto);">
-  <i class="bi bi-grid-3x3-gap-fill me-2" style="color:var(--color-primario);"></i>
-  Categorías disponibles
-</h2>
+<nav class="chips" aria-label="Filtrar por dificultad">
+  <a class="chip{% if not dificultad_actual %} activo{% endif %}" href="?{% if busqueda %}q={{ busqueda|urlencode }}{% endif %}">Todos</a>
+  {% for dificultad in dificultades %}
+    <a class="chip{% if dificultad_actual == dificultad.pk %} activo{% endif %}" href="?dificultad={{ dificultad.pk }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}">{{ dificultad.nombre }}</a>
+  {% endfor %}
+</nav>
 
-{% for categoria in categorias %}
-  <section class="categoria-card">
-    <div class="categoria-header">
-      <div class="categoria-icono">
-        <i class="bi bi-bookmark-star-fill"></i>
-      </div>
-      <div>
-        <h3 class="categoria-titulo">{{ categoria.nombre }}</h3>
-      </div>
+<div class="rejilla-modulos">
+  {% for modulo in modulos %}
+    {% include "components/tarjeta_modulo.html" %}
+  {% empty %}
+    <div class="estado-vacio">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <h2>No encontramos módulos</h2>
+      <p>Prueba con otra palabra o quita el filtro de dificultad.</p>
+      <a class="btn-nb btn-nb--secundario" href="{% url 'contenido:mapa_modulos' %}">Ver todos los módulos</a>
     </div>
-    <p class="categoria-descripcion">{{ categoria.descripcion }}</p>
-
-    <ul class="modulos-lista">
-      {% for modulo in categoria.modulos %}
-        <li class="modulo-item">
-          <h4 class="modulo-nombre">
-            <span class="modulo-orden">{{ modulo.orden }}</span>
-            {{ modulo.nombre }}
-          </h4>
-          <p class="modulo-descripcion">{{ modulo.descripcion }}</p>
-        </li>
-      {% empty %}
-        <li class="modulo-descripcion">Sin módulos disponibles.</li>
-      {% endfor %}
-    </ul>
-  </section>
-{% empty %}
-  <div class="estado-vacio">
-    <i class="bi bi-inbox"></i>
-    <h3>No hay categorías activas</h3>
-    <p>Aún no se han publicado módulos. Vuelve pronto.</p>
-  </div>
-{% endfor %}
-
+  {% endfor %}
+</div>
 {% endblock %}

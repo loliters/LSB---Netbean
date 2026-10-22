@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}{{ modulo.nombre }} · Net Bean{% endblock %}
+{% block titulo_pagina %}Módulos{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  <a href="{% url 'contenido:mapa_modulos' %}">Módulos</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span aria-current="page">{{ modulo.nombre }}</span>
+</nav>
+
+<header class="modulo-cabecera">
+  <h1>{{ modulo.nombre }}</h1>
+  {% if modulo.descripcion %}<p class="texto-suave">{{ modulo.descripcion }}</p>{% endif %}
+  {% if modulo.dificultad %}<span class="etiqueta">{{ modulo.dificultad.nombre }}</span>{% endif %}
+</header>
+
+<ol class="lecciones">
+  {% for leccion in modulo.lecciones_activas %}
+    <li class="leccion">
+      <div class="leccion__cabecera">
+        <span class="leccion__numero" aria-hidden="true">{{ forloop.counter }}</span>
+        <div>
+          <h2 class="leccion__titulo">{{ leccion.nombre }}</h2>
+          {% if leccion.descripcion %}<p class="texto-suave">{{ leccion.descripcion }}</p>{% endif %}
+        </div>
+      </div>
+      <ul class="senas">
+        {% for sena in leccion.senas.all %}
+          <li>
+            <a class="sena-tile{% if sena.pk in dominadas %} sena-tile--dominada{% endif %}" href="{% url 'reconocimiento:practica' sena.pk %}">
+              {% if sena.url_imagen %}<img src="{{ sena.url_imagen }}" alt="" loading="lazy">{% endif %}
+              <span class="sena-tile__nombre">{{ sena.nombre }}</span>
+              <span class="sena-tile__estado">
+                {% if sena.pk in dominadas %}<i class="bi bi-check-circle-fill" aria-hidden="true"></i> Dominada{% else %}Practicar{% endif %}
+              </span>
+            </a>
+          </li>
+        {% empty %}
+          <li class="texto-suave">Esta lección aún no tiene señas.</li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% empty %}
+    <li class="estado-vacio"><i class="bi bi-journal" aria-hidden="true"></i><p>Este módulo todavía no tiene lecciones.</p></li>
+  {% endfor %}
+</ol>
+{% endblock %}
