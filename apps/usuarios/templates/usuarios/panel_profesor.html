@@ -1,35 +1,19 @@
 {% extends "base.html" %}
-{% block titulo %}Panel Profesor · Net Bean{% endblock %}
+{% block titulo %}Panel del profesor · Net Bean{% endblock %}
+{% block titulo_pagina %}Inicio{% endblock %}
 
 {% block contenido %}
-<section class="hero">
-  <div class="row align-items-center">
-    <div class="col-lg-9 hero-contenido">
-      <h1>Panel del Profesor</h1>
-      <p>Gestiona el contenido pedagógico y revisa el avance de tus estudiantes.</p>
-    </div>
-    <div class="col-lg-3 text-end d-none d-lg-block">
-      <i class="bi bi-easel-fill hero-icono"></i>
-    </div>
-  </div>
+<header class="saludo">
+  <h1>Hola, {{ user.nombre }}</h1>
+  <p>Revisa el contenido publicado y el avance de tus estudiantes.</p>
+</header>
+<section class="stats stats--3" aria-label="Resumen del contenido">
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-bookmark-fill"></i></span>
+    <div><p class="stat__etiqueta">Categorías activas</p><p class="stat__valor">{{ total_categorias }}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-collection-fill"></i></span>
+    <div><p class="stat__etiqueta">Módulos activos</p><p class="stat__valor">{{ total_modulos }}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-mortarboard-fill"></i></span>
+    <div><p class="stat__etiqueta">Estudiantes</p><p class="stat__valor">{{ total_estudiantes }}</p></div></div>
 </section>
-
-<h2 class="seccion-titulo"><i class="bi bi-bar-chart-fill"></i> Resumen del contenido</h2>
-
-<div class="row g-3">
-  <div class="col-md-6">
-    <div class="categoria-card text-center">
-      <div class="categoria-icono mx-auto mb-3"><i class="bi bi-bookmark-fill"></i></div>
-      <h3 class="display-6 text-center">{{ total_categorias }}</h3>
-      <p class="text-center text-muted mb-0">Categorías</p>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="categoria-card text-center">
-      <div class="categoria-icono mx-auto mb-3"><i class="bi bi-collection-fill"></i></div>
-      <h3 class="display-6 text-center">{{ total_modulos }}</h3>
-      <p class="text-center text-muted mb-0">Módulos</p>
-    </div>
-  </div>
-</div>
+<a class="btn-nb btn-nb--primario" href="{% url 'contenido:mapa_modulos' %}">Ver módulos</a>
 {% endblock %}

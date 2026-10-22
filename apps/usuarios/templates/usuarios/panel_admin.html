@@ -1,49 +1,28 @@
 {% extends "base.html" %}
-{% block titulo %}Panel Administrador · Net Bean{% endblock %}
+{% block titulo %}Panel del administrador · Net Bean{% endblock %}
+{% block titulo_pagina %}Inicio{% endblock %}
 
 {% block contenido %}
-<section class="hero">
-  <div class="row align-items-center">
-    <div class="col-lg-9 hero-contenido">
-      <h1>Panel del Administrador</h1>
-      <p>Control total del sistema: usuarios, contenido y configuración.</p>
-    </div>
-    <div class="col-lg-3 text-end d-none d-lg-block">
-      <i class="bi bi-shield-lock-fill hero-icono"></i>
-    </div>
-  </div>
+<header class="saludo">
+  <h1>Panel del administrador</h1>
+  <p>Usuarios, contenido y configuración del sistema.</p>
+</header>
+<section class="stats" aria-label="Métricas del sistema">
+  <a class="stat stat--enlace" href="{% url 'usuarios:gestion_usuarios' %}?estado=todos">
+    <span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+    <div><p class="stat__etiqueta">Usuarios</p><p class="stat__valor">{{ total_usuarios }}</p></div></a>
+  <a class="stat stat--enlace" href="{% url 'usuarios:gestion_usuarios' %}?q=&rol={{ id_rol_estudiante|default:'' }}">
+    <span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-mortarboard-fill"></i></span>
+    <div><p class="stat__etiqueta">Estudiantes</p><p class="stat__valor">{{ total_estudiantes }}</p></div></a>
+  <a class="stat stat--enlace" href="{% url 'usuarios:gestion_usuarios' %}?q=&rol={{ id_rol_profesor|default:'' }}">
+    <span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-easel-fill"></i></span>
+    <div><p class="stat__etiqueta">Profesores</p><p class="stat__valor">{{ total_profesores }}</p></div></a>
+  <a class="stat stat--enlace" href="{% url 'contenido:mapa_modulos' %}">
+    <span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-collection-fill"></i></span>
+    <div><p class="stat__etiqueta">Módulos</p><p class="stat__valor">{{ total_modulos }}</p></div></a>
 </section>
-
-<h2 class="seccion-titulo"><i class="bi bi-bar-chart-fill"></i> Métricas del sistema</h2>
-
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-people-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_usuarios }}</h3>
-      <p class="text-muted mb-0 small">Usuarios</p>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-mortarboard-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_estudiantes }}</h3>
-      <p class="text-muted mb-0 small">Estudiantes</p>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-easel-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_profesores }}</h3>
-      <p class="text-muted mb-0 small">Profesores</p>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-collection-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_modulos }}</h3>
-      <p class="text-muted mb-0 small">Módulos</p>
-    </div>
-  </div>
+<div class="acciones-fila">
+  <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:gestion_usuarios' %}"><i class="bi bi-people" aria-hidden="true"></i>Gestionar usuarios</a>
+  <a class="btn-nb btn-nb--secundario" href="{% url 'admin:index' %}"><i class="bi bi-sliders" aria-hidden="true"></i>Gestionar módulos y señas</a>
 </div>
 {% endblock %}

@@ -1,0 +1,4 @@
+<nav class="pestanas" aria-label="Acceso">
+  <a class="pestanas__item{% if activa == 'login' %} activa{% endif %}" href="{% url 'usuarios:login' %}"{% if activa == 'login' %} aria-current="page"{% endif %}>Iniciar sesión</a>
+  <a class="pestanas__item{% if activa == 'registro' %} activa{% endif %}" href="{% url 'usuarios:registro' %}"{% if activa == 'registro' %} aria-current="page"{% endif %}>Registrarse</a>
+</nav>

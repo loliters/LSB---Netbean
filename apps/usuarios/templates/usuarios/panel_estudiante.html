@@ -1,49 +1,85 @@
 {% extends "base.html" %}
-{% block titulo %}Panel Estudiante · Net Bean{% endblock %}
+{% block titulo %}Inicio · Net Bean{% endblock %}
+{% block titulo_pagina %}Inicio{% endblock %}
 
 {% block contenido %}
-<section class="hero">
-  <div class="row align-items-center">
-    <div class="col-lg-9 hero-contenido">
-      <h1>Hola, {{ user.username }} 👋</h1>
-      <p>Bienvenido a tu panel de estudiante. Aquí verás tu progreso y los módulos disponibles.</p>
-    </div>
-    <div class="col-lg-3 text-end d-none d-lg-block">
-      <i class="bi bi-mortarboard-fill hero-icono"></i>
-    </div>
+<header class="saludo">
+  <h1>Hola, {{ user.nombre }}</h1>
+  <p>Sigue aprendiendo. Cada gesto te acerca a tu objetivo.</p>
+</header>
+
+<section class="stats" aria-label="Resumen de tu aprendizaje">
+  <div class="stat">
+    <span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-shield-fill-check"></i></span>
+    <div><p class="stat__etiqueta">Nivel actual</p><p class="stat__valor">{{ nivel.numero_nivel|default:1 }}</p>
+      {% if nivel %}<p class="stat__nota">{{ nivel.nombre_nivel }}</p>{% endif %}</div>
+  </div>
+  <div class="stat">
+    <span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-star-fill"></i></span>
+    <div><p class="stat__etiqueta">XP total</p><p class="stat__valor">{{ estadisticas.xp_total }}</p></div>
+  </div>
+  <div class="stat">
+    <span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-fire"></i></span>
+    <div><p class="stat__etiqueta">Racha</p><p class="stat__valor">{{ estadisticas.racha_dias }}</p>
+      <p class="stat__nota">{% if estadisticas.racha_dias == 1 %}día{% else %}días{% endif %}</p></div>
+  </div>
+  <div class="stat">
+    <span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+    <div><p class="stat__etiqueta">Lecciones completadas</p><p class="stat__valor">{{ lecciones_completadas }}</p></div>
   </div>
 </section>
 
-<h2 class="seccion-titulo">
-  <i class="bi bi-grid-3x3-gap-fill"></i> Módulos disponibles
-</h2>
-
-{% for categoria in categorias %}
-  <section class="categoria-card">
-    <div class="categoria-header">
-      <div class="categoria-icono"><i class="bi bi-bookmark-star-fill"></i></div>
-      <h3 class="categoria-titulo">{{ categoria.nombre }}</h3>
+<div class="rejilla-panel">
+  <section class="tarjeta" id="progreso" aria-labelledby="titulo-progreso">
+    <h2 id="titulo-progreso" class="tarjeta__titulo">Tu progreso</h2>
+    {% if modulo_actual %}
+      <div class="continuar">
+        <span class="modulo-card__icono" aria-hidden="true"><i class="bi bi-{{ modulo_actual.icono }}"></i></span>
+        <div class="continuar__texto">
+          <p class="continuar__nombre">{{ modulo_actual.nombre }}</p>
+          <div class="modulo-card__progreso">
+            <progress class="barra" max="100" value="{{ modulo_actual.porcentaje }}" aria-label="Progreso del módulo"></progress>
+            <span>{{ modulo_actual.porcentaje }}%</span>
+          </div>
+        </div>
+        <a class="btn-nb btn-nb--primario" href="{% url 'contenido:detalle_modulo' modulo_actual.pk %}">Continuar</a>
+      </div>
+    {% else %}
+      <p class="texto-suave">Aún no hay módulos publicados. Vuelve pronto.</p>
+    {% endif %}
+    <div class="nivel-barra">
+      <div class="nivel-barra__cabecera">
+        <span>Nivel {{ nivel.numero_nivel|default:1 }}</span>
+        {% if siguiente_nivel %}<span>{{ xp_faltante }} XP para el nivel {{ siguiente_nivel.numero_nivel }}</span>{% else %}<span>Nivel máximo</span>{% endif %}
+      </div>
+      <progress class="barra barra--ambar" max="100" value="{{ porcentaje_nivel }}" aria-label="Avance hacia el siguiente nivel"></progress>
     </div>
-    <p class="categoria-descripcion">{{ categoria.descripcion }}</p>
-    <ul class="modulos-lista">
-      {% for modulo in categoria.modulos.all %}
-        {% if modulo.activo %}
-          <li class="modulo-item">
-            <h4 class="modulo-nombre">
-              <span class="modulo-orden">{{ modulo.orden }}</span>
-              {{ modulo.nombre }}
-            </h4>
-            <p class="modulo-descripcion">{{ modulo.descripcion }}</p>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
   </section>
-{% empty %}
-  <div class="estado-vacio">
-    <i class="bi bi-inbox"></i>
-    <h3>No hay categorías activas</h3>
-    <p>Vuelve pronto para ver nuevos módulos.</p>
+
+  <section class="tarjeta recompensa" aria-labelledby="titulo-recompensa">
+    <h2 id="titulo-recompensa" class="tarjeta__titulo">Próxima recompensa</h2>
+    {% if proximo_logro %}
+      <span class="recompensa__insignia" aria-hidden="true"><i class="bi bi-{{ proximo_logro.icono|default:'award-fill' }}"></i></span>
+      <p class="recompensa__nombre">{{ proximo_logro.nombre }}</p>
+      <p class="texto-suave">{{ proximo_logro.descripcion|default:"Sigue practicando para desbloquearla." }}</p>
+    {% else %}
+      <span class="recompensa__insignia" aria-hidden="true"><i class="bi bi-trophy-fill"></i></span>
+      <p class="recompensa__nombre">Desbloqueaste todas las insignias</p>
+    {% endif %}
+  </section>
+</div>
+
+<section aria-labelledby="titulo-modulos">
+  <div class="seccion-cabecera">
+    <h2 id="titulo-modulos">Módulos</h2>
+    <a href="{% url 'contenido:mapa_modulos' %}">Ver todos</a>
   </div>
-{% endfor %}
+  <div class="rejilla-modulos">
+    {% for modulo in modulos %}
+      {% include "components/tarjeta_modulo.html" %}
+    {% empty %}
+      <div class="estado-vacio"><i class="bi bi-inbox" aria-hidden="true"></i><p>Todavía no hay módulos activos.</p></div>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

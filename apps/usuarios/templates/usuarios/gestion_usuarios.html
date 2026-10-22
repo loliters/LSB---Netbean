@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block titulo %}Usuarios · Net Bean{% endblock %}
+{% block titulo_pagina %}Usuarios{% endblock %}
+
+{% block contenido %}
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="texto-suave">Busca, edita o desactiva cuentas. Una cuenta desactivada no puede iniciar sesión, pero conserva su historial.</p>
+  </div>
+  <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:gestion_usuario_nuevo' %}"><i class="bi bi-person-plus" aria-hidden="true"></i>Nuevo usuario</a>
+</header>
+
+<form class="filtros" method="get" role="search">
+  <div class="buscador">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <label class="visually-hidden" for="buscar-usuario">Buscar por nombre o correo</label>
+    <input id="buscar-usuario" type="search" name="q" value="{{ busqueda }}" placeholder="Buscar por nombre o correo">
+  </div>
+  <label class="visually-hidden" for="filtro-rol">Rol</label>
+  <select id="filtro-rol" name="rol" class="selector">
+    <option value="">Todos los roles</option>
+    {% for rol in roles %}
+      <option value="{{ rol.pk }}"{% if rol_actual == rol.pk|stringformat:"s" %} selected{% endif %}>{{ rol.nombre_rol }}</option>
+    {% endfor %}
+  </select>
+  <label class="visually-hidden" for="filtro-estado">Estado</label>
+  <select id="filtro-estado" name="estado" class="selector">
+    <option value="activos"{% if estado_actual == "activos" %} selected{% endif %}>Activos</option>
+    <option value="inactivos"{% if estado_actual == "inactivos" %} selected{% endif %}>Desactivados</option>
+    <option value="todos"{% if estado_actual == "todos" %} selected{% endif %}>Todos</option>
+  </select>
+  <button type="submit" class="btn-nb btn-nb--secundario">Filtrar</button>
+</form>
+
+<p class="texto-suave resumen-lista">{{ paginator.count }} {% if paginator.count == 1 %}usuario{% else %}usuarios{% endif %}</p>
+
+{% if usuarios %}
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th scope="col">Usuario</th>
+        <th scope="col">Rol</th>
+        <th scope="col">Estado</th>
+        <th scope="col" class="tabla__numero">XP</th>
+        <th scope="col">Registro</th>
+        <th scope="col">Último acceso</th>
+        <th scope="col"><span class="visually-hidden">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for usuario in usuarios %}
+        <tr{% if not usuario.estado %} class="tabla__fila--inactiva"{% endif %}>
+          <td>
+            <div class="tabla__usuario">
+              <span class="usuario-chip__avatar" aria-hidden="true">{{ usuario.iniciales }}</span>
+              <div>
+                <strong>{{ usuario.nombre_completo }}</strong>
+                <span>{{ usuario.correo }}</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="etiqueta">{{ usuario.rol.nombre_rol }}</span></td>
+          <td>
+            {% if usuario.estado %}<span class="estado estado--activo">Activo</span>{% else %}<span class="estado estado--inactivo">Desactivado</span>{% endif %}
+          </td>
+          <td class="tabla__numero">{{ usuario.estadisticasusuario.xp_total|default:0 }}</td>
+          <td>{{ usuario.fecha_registro|date:"d/m/Y" }}</td>
+          <td>{{ usuario.ultimo_acceso|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+          <td>
+            <div class="tabla__acciones">
+              <a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'usuarios:gestion_usuario_editar' usuario.pk %}">Editar</a>
+              {% if usuario.pk != user.pk %}
+                <form method="post" action="{% url 'usuarios:gestion_usuario_estado' usuario.pk %}"
+                      data-confirmar="{% if usuario.estado %}¿Desactivar la cuenta de {{ usuario.nombre_completo }}? No podrá iniciar sesión.{% else %}¿Reactivar la cuenta de {{ usuario.nombre_completo }}?{% endif %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="siguiente" value="{{ url_actual }}">
+                  {% if usuario.estado %}
+                    <button type="submit" class="btn-nb btn-nb--peligro btn-nb--chico">Desactivar</button>
+                  {% else %}
+                    <button type="submit" class="btn-nb btn-nb--secundario btn-nb--chico">Reactivar</button>
+                  {% endif %}
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+  <nav class="paginacion" aria-label="Páginas">
+    {% if page_obj.has_previous %}<a class="btn-nb btn-nb--fantasma btn-nb--chico" href="?{{ parametros }}&page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+    <span>Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="btn-nb btn-nb--fantasma btn-nb--chico" href="?{{ parametros }}&page={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}
+  </nav>
+{% endif %}
+{% else %}
+  <div class="estado-vacio">
+    <i class="bi bi-people" aria-hidden="true"></i>
+    <h2>No hay usuarios con esos filtros</h2>
+    <a class="btn-nb btn-nb--secundario" href="{% url 'usuarios:gestion_usuarios' %}">Quitar filtros</a>
+  </div>
+{% endif %}
+{% endblock %}
