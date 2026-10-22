@@ -1,0 +1,10 @@
+<header class="nav-publica">
+  <div class="container nav-publica__fila">
+    <a class="marca" href="{% url 'inicio' %}">{% include "components/isotipo.html" %}<span>Net Bean</span></a>
+    <nav class="nav-publica__enlaces" aria-label="Principal">
+      <a href="{% url 'contenido:mapa_modulos' %}">Módulos</a>
+      <a href="{% url 'usuarios:login' %}">Iniciar sesión</a>
+      <a class="btn-nb btn-nb--claro" href="{% url 'usuarios:registro' %}">Registrarse</a>
+    </nav>
+  </div>
+</header>

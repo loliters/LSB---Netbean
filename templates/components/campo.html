@@ -1,0 +1,14 @@
+<div class="campo{% if campo.errors %} campo--error{% endif %}">
+  <label class="campo__etiqueta" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+  <div class="campo__control">
+    {% if icono %}<i class="bi bi-{{ icono }} campo__icono" aria-hidden="true"></i>{% endif %}
+    {{ campo }}
+    {% if campo.field.widget.input_type == "password" %}
+      <button type="button" class="campo__ver" data-ver-contrasena aria-label="Mostrar contraseña">
+        <i class="bi bi-eye" aria-hidden="true"></i>
+      </button>
+    {% endif %}
+  </div>
+  {% if campo.help_text %}<p class="campo__ayuda">{{ campo.help_text }}</p>{% endif %}
+  {% for error in campo.errors %}<p class="campo__error" role="alert">{{ error }}</p>{% endfor %}
+</div>

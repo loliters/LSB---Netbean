@@ -1,0 +1,15 @@
+<article class="modulo-card">
+  <span class="modulo-card__icono" aria-hidden="true"><i class="bi bi-{{ modulo.icono }}"></i></span>
+  <h3 class="modulo-card__titulo">{{ modulo.nombre }}</h3>
+  <p class="modulo-card__meta">
+    {{ modulo.total_lecciones }} {% if modulo.total_lecciones == 1 %}lección{% else %}lecciones{% endif %}
+    {% if modulo.dificultad %}<span class="etiqueta">{{ modulo.dificultad.nombre }}</span>{% endif %}
+  </p>
+  {% if user.is_authenticated %}
+    <div class="modulo-card__progreso">
+      <progress class="barra" max="100" value="{{ modulo.porcentaje }}" aria-label="Progreso en {{ modulo.nombre }}"></progress>
+      <span>{{ modulo.porcentaje }}%</span>
+    </div>
+  {% endif %}
+  <a class="btn-nb btn-nb--primario btn-nb--bloque" href="{% url 'contenido:detalle_modulo' modulo.pk %}">Ver módulo</a>
+</article>
