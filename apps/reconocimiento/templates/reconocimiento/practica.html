@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Practicar «{{ sena.nombre }}» · Net Bean{% endblock %}
+{% block titulo_pagina %}Práctica con IA{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  <a href="{% url 'contenido:mapa_modulos' %}">Módulos</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <a href="{% url 'contenido:detalle_modulo' sena.leccion.modulo_id %}">{{ sena.leccion.modulo.nombre }}</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span aria-current="page">{{ sena.leccion.nombre }}</span>
+</nav>
+
+<header class="practica-cabecera">
+  <div>
+    <h1>Practica la seña «{{ sena.nombre }}»</h1>
+    <p class="texto-suave">La cámara reconoce tu gesto en tiempo real. Busca buena luz y un fondo sencillo.</p>
+  </div>
+  <div class="avance-leccion">
+    <span class="etiqueta">Seña {{ posicion }} de {{ total }}</span>
+    <p class="avance-leccion__texto"><strong id="valor-dominadas">{{ dominadas }}</strong> de <span id="valor-total">{{ total }}</span> señas dominadas</p>
+    <progress id="barra-leccion" class="barra" max="{{ total }}" value="{{ dominadas }}" aria-label="Avance de la lección"></progress>
+  </div>
+</header>
+
+<div id="practica" class="practica"
+     data-url-prediccion="{% url 'reconocimiento:predecir' %}"
+     data-url-evaluacion="{% url 'gamificacion:evaluar' %}"
+     data-id-sena="{{ sena.pk }}"
+     data-id-leccion="{{ sena.leccion_id }}"
+     data-letra-objetivo="{{ sena.nombre }}"
+     data-umbral="{{ sena.puntos_minimos }}"
+     data-url-modulo="{% url 'contenido:detalle_modulo' sena.leccion.modulo_id %}">
+
+  <section class="camara" aria-label="Cámara">
+    <div class="camara__marco" data-estado="apagada">
+      <video id="camara-video" class="camara__video" autoplay playsinline muted></video>
+      <canvas id="camara-guia" class="camara__guia" aria-hidden="true"></canvas>
+      <span id="camara-etiqueta" class="camara__etiqueta" hidden></span>
+      <div id="camara-aviso" class="camara__aviso">
+        <i class="bi bi-camera-video" aria-hidden="true"></i>
+        <p id="camara-aviso-texto">Activa la cámara para empezar. El video no se guarda.</p>
+        <button id="btn-camara" type="button" class="btn-nb btn-nb--primario">Activar cámara</button>
+      </div>
+    </div>
+    <div class="camara__controles">
+      <label class="interruptor">
+        <input type="checkbox" id="mostrar-guia" checked>
+        <span class="interruptor__pista" aria-hidden="true"></span>
+        <span>Mostrar guía</span>
+      </label>
+      <button id="btn-evaluar" type="button" class="btn-nb btn-nb--secundario" disabled>
+        <i class="bi bi-lightning-charge" aria-hidden="true"></i>Evaluar ahora
+      </button>
+    </div>
+  </section>
+
+  <aside class="panel-practica">
+    <div class="tarjeta referencia">
+      {% if sena.url_imagen %}
+        <img class="referencia__imagen" src="{{ sena.url_imagen }}" alt="Referencia de la seña {{ sena.nombre }}">
+      {% endif %}
+      <div>
+        <p class="referencia__letra" aria-hidden="true">{{ sena.nombre }}</p>
+        <p class="texto-suave">Imita la referencia. Se aprueba con {{ sena.puntos_minimos }}% o más.</p>
+      </div>
+    </div>
+
+    <div class="tarjeta precision" aria-live="polite">
+      {% include "components/anillo.html" with porcentaje=0 tono="neutro" etiqueta="precisión" %}
+      <div class="precision__texto">
+        <p id="estado-texto" class="precision__estado">Esperando tu seña</p>
+        <p class="texto-suave">Detectada: <strong id="letra-detectada">—</strong></p>
+      </div>
+    </div>
+
+    <div class="marcadores">
+      <div class="marcador marcador--racha">
+        <i class="bi bi-fire" aria-hidden="true"></i>
+        <span><strong id="valor-racha">{{ estadisticas.racha_dias }}</strong> días de racha</span>
+      </div>
+      <div class="marcador marcador--xp">
+        <i class="bi bi-star-fill" aria-hidden="true"></i>
+        <span><strong id="valor-xp">{{ estadisticas.xp_total }}</strong> XP</span>
+        <span id="xp-flotante" class="marcador__flotante" aria-hidden="true" hidden>+30</span>
+      </div>
+    </div>
+
+    <div id="resultado" class="resultado" role="status" hidden>
+      <i id="resultado-icono" class="bi" aria-hidden="true"></i>
+      <div>
+        <p id="resultado-titulo" class="resultado__titulo"></p>
+        <p id="resultado-detalle" class="resultado__detalle"></p>
+      </div>
+    </div>
+
+    <div class="acciones-fila">
+      <a class="btn-nb btn-nb--fantasma" href="{% url 'contenido:detalle_modulo' sena.leccion.modulo_id %}">Cambiar seña</a>
+      <button id="btn-reintentar" type="button" class="btn-nb btn-nb--secundario" hidden>Practicar otra vez</button>
+      {% if siguiente_id %}
+        <a id="btn-siguiente" class="btn-nb btn-nb--secundario" href="{% url 'reconocimiento:practica' siguiente_id %}">Siguiente seña</a>
+      {% endif %}
+      <a id="btn-volver-modulo" class="btn-nb btn-nb--primario" href="{% url 'contenido:detalle_modulo' sena.leccion.modulo_id %}" hidden>Volver al módulo</a>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/captura-camara.js' %}" defer></script>
+{% endblock %}
