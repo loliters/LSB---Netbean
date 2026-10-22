@@ -1,3 +1,4 @@
+"""Backend de autenticación por correo electrónico."""
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 
@@ -5,28 +6,21 @@ Usuario = get_user_model()
 
 
 class CorreoBackend(ModelBackend):
-    """Permite autenticar usando el campo 'correo'."""
+    """Autentica con el campo ``correo`` (sin distinguir mayúsculas)."""
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        # Tomamos el valor si viene como 'correo' (desde views.py) o como 'username' (por compatibilidad)
-        identificador = kwargs.get('correo') or username
-        
-        if identificador is None or password is None:
+        correo = kwargs.get("correo") or username
+        if not correo or password is None:
             return None
-
-        try:
-            # ¡CORRECCIÓN! Buscamos directamente por el campo 'correo'
-            user = Usuario.objects.get(correo=identificador)
-        except Usuario.DoesNotExist:
+        usuario = Usuario.objects.filter(correo__iexact=correo.strip()).first()
+        if usuario is None:
+            Usuario().set_password(password)  # tiempo constante ante correos inexistentes
             return None
-
-        if user.check_password(password) and self.user_can_authenticate(user):
-            return user
-        
+        if usuario.check_password(password) and self.user_can_authenticate(usuario):
+            return usuario
         return None
 
     def get_user(self, user_id):
-        try:
-            return Usuario.objects.get(pk=user_id)
-        except Usuario.DoesNotExist:
-            return None
+        """Cierra la sesión de cuentas desactivadas (borrado lógico)."""
+        usuario = Usuario.objects.select_related("rol").filter(pk=user_id).first()
+        return usuario if usuario and self.user_can_authenticate(usuario) else None
