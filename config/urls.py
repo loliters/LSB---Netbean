@@ -14,6 +14,7 @@ urlpatterns = [
     path("contenido/", include("apps.contenido.urls")),
     path("reconocimiento/", include("apps.reconocimiento.urls")),
     path("gamificacion/", include("apps.gamificacion.urls")),
+    path("reportes/", include("apps.reportes.urls")),
     path(
         "api/recuperar-password",
         usuarios_views.api_recuperar_password,
