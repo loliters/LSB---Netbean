@@ -1,57 +1,28 @@
-{% extends "base.html" %}
+{% extends "usuarios/_auth_layout.html" %}
 {% block titulo %}Iniciar sesión · Net Bean{% endblock %}
+{% block pestanas %}{% include "usuarios/_pestanas.html" with activa="login" %}{% endblock %}
 
-{% block contenido %}
-<div class="auth-card">
-  <div class="auth-header">
-    <div class="auth-icono">
-      <i class="bi bi-shield-lock-fill"></i>
-    </div>
-    <h2>Bienvenido de nuevo</h2>
-    <p>Inicia sesión para continuar tu aprendizaje</p>
+{% block formulario %}
+<h1 class="auth__titulo">Bienvenida de nuevo</h1>
+<p class="auth__subtitulo">Inicia sesión para continuar tu aprendizaje.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% for error in form.non_field_errors %}<p class="alerta-form" role="alert">{{ error }}</p>{% endfor %}
+
+  {% include "components/campo.html" with campo=form.correo icono="envelope" %}
+  {% include "components/campo.html" with campo=form.password icono="lock" %}
+
+  <div class="auth__fila">
+    <label class="casilla">
+      {{ form.recordarme }}
+      <span>Recordarme</span>
+    </label>
+    <a href="{% url 'usuarios:recuperar_password' %}">¿Olvidaste tu contraseña?</a>
   </div>
 
-  <form method="post">
-    {% csrf_token %}
+  <button type="submit" class="btn-nb btn-nb--primario btn-nb--bloque btn-nb--grande">Iniciar sesión</button>
+</form>
 
-    {% if form.non_field_errors %}
-      <ul class="errorlist">
-        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
-      </ul>
-    {% endif %}
-
-    <div class="mb-3">
-      <label for="{{ form.identificador.id_for_label }}">
-        <i class="bi bi-person-fill me-1"></i> Usuario o correo
-      </label>
-      {{ form.identificador }}
-      {% if form.identificador.errors %}
-        <ul class="errorlist">
-          {% for error in form.identificador.errors %}<li>{{ error }}</li>{% endfor %}
-        </ul>
-      {% endif %}
-    </div>
-
-    <div class="mb-4">
-      <label for="{{ form.password.id_for_label }}">
-        <i class="bi bi-key-fill me-1"></i> Contraseña
-      </label>
-      {{ form.password }}
-      {% if form.password.errors %}
-        <ul class="errorlist">
-          {% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}
-        </ul>
-      {% endif %}
-    </div>
-
-    <button type="submit" class="btn-primario">
-      <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
-    </button>
-  </form>
-
-  <p class="auth-footer">
-    ¿No tienes cuenta?
-    <a href="{% url 'usuarios:registro' %}">Regístrate aquí</a>
-  </p>
-</div>
+<p class="auth__pie">¿No tienes cuenta? <a href="{% url 'usuarios:registro' %}">Regístrate</a></p>
 {% endblock %}

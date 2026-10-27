@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block titulo %}Señas de {{ leccion.nombre }} · Net Bean{% endblock %}
+{% block titulo_pagina %}Contenido{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  <a href="{% url 'contenido:gestion_modulos' %}">Contenido</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <a href="{% url 'contenido:gestion_lecciones' leccion.modulo_id %}">{{ leccion.modulo.nombre }}</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span aria-current="page">{{ leccion.nombre }}</span>
+</nav>
+<header class="catalogo-cabecera">
+  <div>
+    <h1>{{ leccion.nombre }}</h1>
+    <p class="texto-suave">El nombre de cada seña debe coincidir con una etiqueta del modelo de IA para que pueda evaluarse.</p>
+  </div>
+  <a class="btn-nb btn-nb--primario" href="{% url 'contenido:gestion_sena_nueva' leccion.pk %}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Nueva seña</a>
+</header>
+
+{% if senas %}
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th scope="col">Seña</th><th scope="col">Tipo</th><th scope="col">Dificultad</th>
+        <th scope="col" class="tabla__numero">Mínimo</th><th scope="col" class="tabla__numero">Intentos</th>
+        <th scope="col" class="tabla__numero">Aciertos</th><th scope="col">Estado</th>
+        <th scope="col"><span class="visually-hidden">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sena in senas %}
+        <tr{% if not sena.estado %} class="tabla__fila--inactiva"{% endif %}>
+          <td>
+            <div class="tabla__usuario">
+              {% if sena.url_imagen %}<img class="miniatura" src="{{ sena.url_imagen }}" alt="Referencia de {{ sena.nombre }}">{% else %}<span class="miniatura miniatura--vacia" aria-hidden="true"><i class="bi bi-image"></i></span>{% endif %}
+              <strong class="sena-nombre">{{ sena.nombre }}</strong>
+            </div>
+          </td>
+          <td>{{ sena.tipo_sena.nombre }}</td>
+          <td>{{ sena.dificultad.nombre }}</td>
+          <td class="tabla__numero">{{ sena.puntos_minimos }} %</td>
+          <td class="tabla__numero">{{ sena.intentos }}</td>
+          <td class="tabla__numero">{{ sena.aciertos }}</td>
+          <td>{% if sena.estado %}<span class="estado estado--activo">Activa</span>{% else %}<span class="estado estado--inactivo">Inactiva</span>{% endif %}</td>
+          <td>
+            <div class="tabla__acciones">
+              <a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'contenido:gestion_sena_editar' sena.pk %}">Editar</a>
+              {% include "contenido/_boton_estado.html" with tipo="sena" objeto=sena %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="estado-vacio">
+    <i class="bi bi-hand-index" aria-hidden="true"></i>
+    <h2>Esta lección no tiene señas</h2>
+    <a class="btn-nb btn-nb--primario" href="{% url 'contenido:gestion_sena_nueva' leccion.pk %}">Crear la primera seña</a>
+  </div>
+{% endif %}
+{% endblock %}

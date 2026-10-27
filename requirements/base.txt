@@ -1,0 +1,26 @@
+# Framework y base
+Django==6.1.1
+asgiref==3.12.1
+sqlparse==0.6.0
+tzdata==2026.4
+
+# Base de datos PostgreSQL
+psycopg[binary]==3.3.6
+
+# Configuración y variables de entorno
+python-dotenv==1.2.3
+django-environ
+
+# Almacenamiento en la nube (AWS S3, etc.)
+django-storages
+boto3
+
+# Peticiones HTTP
+requests
+
+# Agregar a requirements/base.txt
+numpy==1.26.4
+protobuf==4.25.8
+mediapipe==0.10.32            # misma versión que dactilologiaMexicana (API Tasks)
+tensorflow==2.16.1            # ejecuta su model.tflite; TF 2.14 no soporta Python 3.12
+ 

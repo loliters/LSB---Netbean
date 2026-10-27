@@ -1,0 +1,10 @@
+{% if messages %}
+  <div class="avisos" role="status">
+    {% for mensaje in messages %}
+      <div class="aviso aviso--{{ mensaje.tags|default:'info' }}">
+        <i class="bi {% if mensaje.tags == 'success' %}bi-check-circle-fill{% elif mensaje.tags == 'error' %}bi-exclamation-octagon-fill{% else %}bi-info-circle-fill{% endif %}" aria-hidden="true"></i>
+        <span>{{ mensaje }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

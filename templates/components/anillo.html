@@ -1,0 +1,10 @@
+<div class="anillo" data-tono="{{ tono|default:'neutro' }}">
+  <svg class="anillo__svg" viewBox="0 0 120 120" aria-hidden="true">
+    <circle class="anillo__pista" cx="60" cy="60" r="52"></circle>
+    <circle class="anillo__valor" cx="60" cy="60" r="52" data-anillo-valor data-porcentaje="{{ porcentaje|default:0 }}"></circle>
+  </svg>
+  <div class="anillo__centro">
+    <strong data-anillo-texto>{{ porcentaje|default:0 }}%</strong>
+    <span>{{ etiqueta|default:"precisión" }}</span>
+  </div>
+</div>

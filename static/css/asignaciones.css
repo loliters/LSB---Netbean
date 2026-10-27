@@ -1,0 +1,36 @@
+/* Asignaciones profesor–estudiante y contenido (HU-13). Se carga solo en esas pantallas. */
+.aviso-regla { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.9rem 1.1rem; margin-bottom: 1.25rem; border-radius: var(--nb-radio); background: var(--nb-azul-50); color: var(--nb-navy); font-size: 0.9rem; line-height: 1.5; }
+.aviso-regla i { font-size: 1.15rem; color: var(--nb-azul); margin-top: 0.1rem; }
+.aviso-regla p { margin: 0; }
+
+.relacion { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
+.relacion--mio { background: var(--nb-esmeralda-50); color: var(--nb-esmeralda-700); }
+.relacion--otro { background: var(--nb-ambar-50); color: #92400e; }
+.relacion--libre { background: var(--nb-fondo); color: var(--nb-texto-suave); border: 1px solid var(--nb-borde); }
+
+.barra-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; }
+.barra-acciones .texto-suave { margin-left: auto; font-size: 0.85rem; }
+.tabla__check { width: 44px; text-align: center; }
+.tabla__check input { width: 1.05rem; height: 1.05rem; accent-color: var(--nb-azul); cursor: pointer; }
+.tabla__sub { display: block; font-size: 0.78rem; color: var(--nb-texto-suave); }
+
+.formulario-asignar { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1rem; align-items: start; margin-bottom: 1.5rem; }
+.lista-checks { display: grid; gap: 0.15rem; max-height: 280px; overflow-y: auto; padding: 0.4rem; border: 1px solid var(--nb-borde); border-radius: 12px; background: var(--nb-superficie); }
+.lista-checks .casilla { padding: 0.5rem 0.6rem; border-radius: 8px; font-size: 0.9rem; }
+.lista-checks .casilla:hover { background: var(--nb-azul-50); }
+.pasos-regla { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem; font-size: 0.9rem; color: var(--nb-texto); }
+
+.avance-fila { display: grid; grid-template-columns: minmax(90px, 1fr) auto; align-items: center; gap: 0.6rem; min-width: 190px; }
+.avance-fila small { color: var(--nb-texto-suave); font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 3.4rem; text-align: right; }
+.etiqueta--aviso { background: var(--nb-ambar-50); color: #92400e; }
+.tabla__fila--alerta td:first-child { box-shadow: inset 3px 0 0 var(--nb-ambar); }
+.lista-simple { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; }
+.lista-simple li { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.9rem; color: var(--nb-tinta); }
+.lista-simple small { color: var(--nb-texto-suave); }
+
+@media (max-width: 900px) {
+  .formulario-asignar { grid-template-columns: 1fr; }
+}
+
+/* La lista desplegable sin icono no necesita la sangría izquierda del campo con icono. */
+.campo__input--select.campo__input--sin-icono { padding-left: 1rem; }

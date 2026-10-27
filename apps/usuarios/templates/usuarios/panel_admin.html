@@ -1,49 +1,111 @@
 {% extends "base.html" %}
-{% block titulo %}Panel Administrador · Net Bean{% endblock %}
+{% load static %}
+{% block titulo %}Panel del administrador · Net Bean{% endblock %}
+{% block titulo_pagina %}Inicio{% endblock %}
 
 {% block contenido %}
-<section class="hero">
-  <div class="row align-items-center">
-    <div class="col-lg-9 hero-contenido">
-      <h1>Panel del Administrador</h1>
-      <p>Control total del sistema: usuarios, contenido y configuración.</p>
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Panel del administrador</h1>
+    <p class="texto-suave">Métricas del sistema, estudiantes y control de módulos.</p>
+  </div>
+  <div class="acciones-fila">
+    <a class="btn-nb btn-nb--secundario" href="{% url 'reportes:dashboard' %}"><i class="bi bi-bar-chart-line" aria-hidden="true"></i>Reportes</a>
+    <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:gestion_usuario_nuevo' %}"><i class="bi bi-person-plus" aria-hidden="true"></i>Nuevo usuario</a>
+  </div>
+</header>
+
+<section class="stats stats--5" aria-label="Métricas del sistema">
+  <a class="stat stat--enlace" href="{% url 'usuarios:gestion_usuarios' %}?estado=todos">
+    <span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+    <div><p class="stat__etiqueta">Usuarios</p><p class="stat__valor">{{ total_usuarios }}</p><p class="stat__nota">{{ total_estudiantes }} estudiantes · {{ total_profesores }} profesores</p></div></a>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-person-check-fill"></i></span>
+    <div><p class="stat__etiqueta">Activos (7 días)</p><p class="stat__valor">{{ sistema.activos_semana }}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-camera-video-fill"></i></span>
+    <div><p class="stat__etiqueta">Prácticas hoy</p><p class="stat__valor">{{ sistema.practicas_hoy }}</p><p class="stat__nota">{{ sistema.practicas_semana }} esta semana</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-bullseye"></i></span>
+    <div><p class="stat__etiqueta">Acierto (7 días)</p><p class="stat__valor">{{ sistema.precision_semana }} %</p></div></div>
+  <a class="stat stat--enlace" href="{% url 'contenido:gestion_modulos' %}">
+    <span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-collection-fill"></i></span>
+    <div><p class="stat__etiqueta">Módulos</p><p class="stat__valor">{{ total_modulos }}</p></div></a>
+</section>
+
+<section class="tarjeta tarjeta--grafico" aria-labelledby="t-sistema">
+  <h2 id="t-sistema" class="tarjeta__titulo">Prácticas en el sistema (14 días)</h2>
+  <div class="grafico"><canvas id="grafico-sistema" role="img" aria-label="Intentos y aciertos de los últimos 14 días"></canvas></div>
+</section>
+
+<section class="bloque-admin" aria-labelledby="t-estudiantes" data-tabla-filtrable>
+  <div class="seccion-cabecera">
+    <h2 id="t-estudiantes">Estudiantes</h2>
+    <a href="{% url 'usuarios:gestion_usuarios' %}">Gestión completa</a>
+  </div>
+  <div class="filtros">
+    <div class="buscador">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <label class="visually-hidden" for="buscar-estudiante">Buscar estudiante</label>
+      <input id="buscar-estudiante" type="search" placeholder="Buscar por nombre o correo" data-filtro-texto autocomplete="off">
     </div>
-    <div class="col-lg-3 text-end d-none d-lg-block">
-      <i class="bi bi-shield-lock-fill hero-icono"></i>
-    </div>
+    <label class="visually-hidden" for="filtro-estado-est">Estado</label>
+    <select id="filtro-estado-est" class="selector" data-filtro-estado>
+      <option value="">Todos</option><option value="activo">Activos</option><option value="inactivo">Desactivados</option>
+    </select>
+    <span class="texto-suave" data-contador aria-live="polite"></span>
+  </div>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th scope="col">Estudiante</th><th scope="col" class="tabla__numero">XP</th><th scope="col" class="tabla__numero">Racha</th><th scope="col" class="tabla__numero">Prácticas</th><th scope="col">Último acceso</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+      <tbody>
+        {% for e in estudiantes %}
+          <tr data-fila data-busqueda="{{ e.nombre_completo|lower }} {{ e.correo|lower }}" data-estado="{% if e.estado %}activo{% else %}inactivo{% endif %}"{% if not e.estado %} class="tabla__fila--inactiva"{% endif %}>
+            <td><div class="tabla__usuario"><span class="usuario-chip__avatar" aria-hidden="true">{{ e.iniciales }}</span><div><strong>{{ e.nombre_completo }}</strong><span>{{ e.correo }}</span></div></div></td>
+            <td class="tabla__numero">{{ e.estadisticasusuario.xp_total|default:0 }}</td>
+            <td class="tabla__numero">{{ e.estadisticasusuario.racha_dias|default:0 }}</td>
+            <td class="tabla__numero">{{ e.estadisticasusuario.total_practicas|default:0 }}</td>
+            <td>{{ e.ultimo_acceso|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+            <td>{% if e.estado %}<span class="estado estado--activo">Activo</span>{% else %}<span class="estado estado--inactivo">Desactivado</span>{% endif %}</td>
+            <td><div class="tabla__acciones">
+              <a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'usuarios:gestion_usuario_editar' e.pk %}">Editar</a>
+              <form method="post" action="{% url 'usuarios:gestion_usuario_estado' e.pk %}" data-confirmar="{% if e.estado %}¿Desactivar a {{ e.nombre_completo }}?{% else %}¿Reactivar a {{ e.nombre_completo }}?{% endif %}">
+                {% csrf_token %}<input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-nb {% if e.estado %}btn-nb--peligro{% else %}btn-nb--secundario{% endif %} btn-nb--chico">{% if e.estado %}Desactivar{% else %}Reactivar{% endif %}</button>
+              </form></div></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="texto-suave">Todavía no hay estudiantes registrados.</td></tr>
+        {% endfor %}
+        <tr data-sin-resultados hidden><td colspan="7" class="texto-suave">Ningún estudiante coincide con la búsqueda.</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<h2 class="seccion-titulo"><i class="bi bi-bar-chart-fill"></i> Métricas del sistema</h2>
+<section class="bloque-admin" aria-labelledby="t-modulos">
+  <div class="seccion-cabecera">
+    <h2 id="t-modulos">Control de módulos</h2>
+    <a href="{% url 'contenido:gestion_modulos' %}">Gestionar contenido</a>
+  </div>
+  <div class="rejilla-control">
+    {% for modulo in modulos_control %}
+      <article class="control-modulo{% if not modulo.estado %} control-modulo--inactivo{% endif %}">
+        <div><h3>{{ modulo.nombre }}</h3><p class="texto-suave">{{ modulo.categoria.nombre }} · {{ modulo.total_senas }} señas</p></div>
+        <form method="post" action="{% url 'contenido:gestion_estado' 'modulo' modulo.pk %}" data-confirmar="{% if modulo.estado %}¿Ocultar «{{ modulo.nombre }}» a los estudiantes?{% else %}¿Publicar «{{ modulo.nombre }}»?{% endif %}">
+          {% csrf_token %}<input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+          <button type="submit" class="interruptor-boton" aria-pressed="{% if modulo.estado %}true{% else %}false{% endif %}" aria-label="{% if modulo.estado %}Desactivar{% else %}Activar{% endif %} {{ modulo.nombre }}">
+            <span class="interruptor__pista" aria-hidden="true"></span><span>{% if modulo.estado %}Publicado{% else %}Oculto{% endif %}</span>
+          </button>
+        </form>
+      </article>
+    {% empty %}
+      <p class="texto-suave">No hay módulos. Ejecuta <code>python manage.py cargar_modulos</code>.</p>
+    {% endfor %}
+  </div>
+</section>
+{{ grafico|json_script:"datos-sistema" }}
+{% endblock %}
 
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-people-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_usuarios }}</h3>
-      <p class="text-muted mb-0 small">Usuarios</p>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-mortarboard-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_estudiantes }}</h3>
-      <p class="text-muted mb-0 small">Estudiantes</p>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-easel-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_profesores }}</h3>
-      <p class="text-muted mb-0 small">Profesores</p>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="categoria-card text-center">
-      <i class="bi bi-collection-fill fs-2 text-primary"></i>
-      <h3 class="display-6 mt-2">{{ total_modulos }}</h3>
-      <p class="text-muted mb-0 small">Módulos</p>
-    </div>
-  </div>
-</div>
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="{% static 'js/panel-graficos.js' %}" defer></script>
+  <script src="{% static 'js/panel-admin.js' %}" defer></script>
 {% endblock %}

@@ -1,0 +1,10 @@
+<form method="post" action="{% url 'contenido:gestion_estado' tipo objeto.pk %}"
+      data-confirmar="{% if objeto.estado %}¿Desactivar «{{ objeto.nombre }}»? Los estudiantes dejarán de verlo.{% else %}¿Activar «{{ objeto.nombre }}»?{% endif %}">
+  {% csrf_token %}
+  <input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+  {% if objeto.estado %}
+    <button type="submit" class="btn-nb btn-nb--peligro btn-nb--chico">Desactivar</button>
+  {% else %}
+    <button type="submit" class="btn-nb btn-nb--secundario btn-nb--chico">Activar</button>
+  {% endif %}
+</form>
