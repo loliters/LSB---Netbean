@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Gestión de contenido · Net Bean{% endblock %}
+{% block titulo_pagina %}Contenido{% endblock %}
+
+{% block contenido %}
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Gestión de contenido</h1>
+    <p class="texto-suave">Crea y ordena módulos, lecciones y señas. Desactivar oculta el contenido a los estudiantes sin borrar su historial.</p>
+  </div>
+  <a class="btn-nb btn-nb--primario" href="{% url 'contenido:gestion_modulo_nuevo' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Nuevo módulo</a>
+</header>
+
+{% if modulos %}
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th scope="col">Módulo</th><th scope="col">Categoría</th><th scope="col">Dificultad</th>
+        <th scope="col" class="tabla__numero">Orden</th><th scope="col" class="tabla__numero">Lecciones</th>
+        <th scope="col" class="tabla__numero">Señas</th><th scope="col">Estado</th>
+        <th scope="col"><span class="visually-hidden">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for modulo in modulos %}
+        <tr{% if not modulo.estado %} class="tabla__fila--inactiva"{% endif %}>
+          <td><strong>{{ modulo.nombre }}</strong></td>
+          <td>{{ modulo.categoria.nombre }}</td>
+          <td>{{ modulo.dificultad.nombre|default:"—" }}</td>
+          <td class="tabla__numero">{{ modulo.orden }}</td>
+          <td class="tabla__numero">{{ modulo.total_lecciones }}</td>
+          <td class="tabla__numero">{{ modulo.total_senas }}</td>
+          <td>{% if modulo.estado %}<span class="estado estado--activo">Activo</span>{% else %}<span class="estado estado--inactivo">Inactivo</span>{% endif %}</td>
+          <td>
+            <div class="tabla__acciones">
+              <a class="btn-nb btn-nb--secundario btn-nb--chico" href="{% url 'contenido:gestion_lecciones' modulo.pk %}">Lecciones</a>
+              <a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'contenido:gestion_modulo_editar' modulo.pk %}">Editar</a>
+              {% include "contenido/_boton_estado.html" with tipo="modulo" objeto=modulo %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="estado-vacio">
+    <i class="bi bi-collection" aria-hidden="true"></i>
+    <h2>Todavía no hay módulos</h2>
+    <a class="btn-nb btn-nb--primario" href="{% url 'contenido:gestion_modulo_nuevo' %}">Crear el primer módulo</a>
+  </div>
+{% endif %}
+{% endblock %}

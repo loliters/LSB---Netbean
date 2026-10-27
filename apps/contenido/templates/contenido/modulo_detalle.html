@@ -27,13 +27,17 @@
       <ul class="senas">
         {% for sena in leccion.senas.all %}
           <li>
+            {% if user.nombre_rol == "estudiante" %}
             <a class="sena-tile{% if sena.pk in dominadas %} sena-tile--dominada{% endif %}" href="{% url 'reconocimiento:practica' sena.pk %}">
+            {% else %}
+            <div class="sena-tile">
+            {% endif %}
               {% if sena.url_imagen %}<img src="{{ sena.url_imagen }}" alt="" loading="lazy">{% endif %}
               <span class="sena-tile__nombre">{{ sena.nombre }}</span>
               <span class="sena-tile__estado">
-                {% if sena.pk in dominadas %}<i class="bi bi-check-circle-fill" aria-hidden="true"></i> Dominada{% else %}Practicar{% endif %}
+                {% if user.nombre_rol != "estudiante" %}Vista de contenido{% elif sena.pk in dominadas %}<i class="bi bi-check-circle-fill" aria-hidden="true"></i> Dominada · repasar{% else %}Practicar{% endif %}
               </span>
-            </a>
+            {% if user.nombre_rol == "estudiante" %}</a>{% else %}</div>{% endif %}
           </li>
         {% empty %}
           <li class="texto-suave">Esta lección aún no tiene señas.</li>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block titulo %}Lecciones de {{ modulo.nombre }} · Net Bean{% endblock %}
+{% block titulo_pagina %}Contenido{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  <a href="{% url 'contenido:gestion_modulos' %}">Contenido</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span aria-current="page">{{ modulo.nombre }}</span>
+</nav>
+<header class="catalogo-cabecera">
+  <div>
+    <h1>{{ modulo.nombre }}</h1>
+    <p class="texto-suave">{{ modulo.categoria.nombre }}{% if not modulo.estado %} · módulo inactivo{% endif %}</p>
+  </div>
+  <a class="btn-nb btn-nb--primario" href="{% url 'contenido:gestion_leccion_nueva' modulo.pk %}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Nueva lección</a>
+</header>
+
+{% if lecciones %}
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th scope="col" class="tabla__numero">Orden</th><th scope="col">Lección</th>
+        <th scope="col" class="tabla__numero">Señas</th><th scope="col" class="tabla__numero">XP</th>
+        <th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for leccion in lecciones %}
+        <tr{% if not leccion.estado %} class="tabla__fila--inactiva"{% endif %}>
+          <td class="tabla__numero">{{ leccion.orden }}</td>
+          <td><strong>{{ leccion.nombre }}</strong></td>
+          <td class="tabla__numero">{{ leccion.total_senas }}</td>
+          <td class="tabla__numero">{{ leccion.xp_recompensa }}</td>
+          <td>{% if leccion.estado %}<span class="estado estado--activo">Activa</span>{% else %}<span class="estado estado--inactivo">Inactiva</span>{% endif %}</td>
+          <td>
+            <div class="tabla__acciones">
+              <a class="btn-nb btn-nb--secundario btn-nb--chico" href="{% url 'contenido:gestion_senas' leccion.pk %}">Señas</a>
+              <a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'contenido:gestion_leccion_editar' leccion.pk %}">Editar</a>
+              {% include "contenido/_boton_estado.html" with tipo="leccion" objeto=leccion %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="estado-vacio">
+    <i class="bi bi-journal" aria-hidden="true"></i>
+    <h2>Este módulo no tiene lecciones</h2>
+    <a class="btn-nb btn-nb--primario" href="{% url 'contenido:gestion_leccion_nueva' modulo.pk %}">Crear la primera lección</a>
+  </div>
+{% endif %}
+{% endblock %}

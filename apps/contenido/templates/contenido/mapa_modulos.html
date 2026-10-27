@@ -6,7 +6,7 @@
 <header class="catalogo-cabecera">
   <div>
     <h1>Módulos</h1>
-    <p class="texto-suave">Elige un módulo para ver sus lecciones y practicar cada seña.</p>
+    <p class="texto-suave">{% if user.nombre_rol == "estudiante" or not user.is_authenticated %}Elige un módulo para ver sus lecciones y practicar cada seña.{% else %}Catálogo de módulos y lecciones. Para editarlos usa la sección Contenido.{% endif %}</p>
   </div>
   <form class="buscador" method="get" role="search">
     <i class="bi bi-search" aria-hidden="true"></i>
@@ -15,6 +15,10 @@
     {% if dificultad_actual %}<input type="hidden" name="dificultad" value="{{ dificultad_actual }}">{% endif %}
   </form>
 </header>
+
+{% if contenido_asignado %}
+<p class="aviso-regla" role="note" style="display:flex;gap:.6rem;align-items:center;padding:.8rem 1rem;margin-bottom:1rem;border-radius:12px;background:var(--nb-azul-50);color:var(--nb-navy);font-size:.9rem"><i class="bi bi-person-check-fill" aria-hidden="true"></i>Estás viendo el contenido que tu profesor te asignó.</p>
+{% endif %}
 
 <nav class="chips" aria-label="Filtrar por dificultad">
   <a class="chip{% if not dificultad_actual %} activo{% endif %}" href="?{% if busqueda %}q={{ busqueda|urlencode }}{% endif %}">Todos</a>

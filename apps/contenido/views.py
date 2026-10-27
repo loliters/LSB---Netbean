@@ -4,6 +4,8 @@ from django.shortcuts import render
 
 from apps.core.utils import entero_o_none
 
+from apps.usuarios.asignaciones import alcance_contenido
+
 from . import services
 
 
@@ -16,6 +18,7 @@ def mapa_modulos(request):
         "dificultades": services.listar_dificultades(),
         "dificultad_actual": id_dificultad,
         "busqueda": busqueda,
+        "contenido_asignado": alcance_contenido(request.user) is not None,
     })
 
 
