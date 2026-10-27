@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Mis logros · Net Bean{% endblock %}
+{% block titulo_pagina %}Logros{% endblock %}
+
+{% block contenido %}
+<section class="logros-resumen" aria-label="Resumen de logros">
+  <div class="logros-resumen__trofeo" aria-hidden="true"><i class="bi bi-trophy-fill"></i></div>
+  <div class="logros-resumen__texto">
+    <h1>Mis logros</h1>
+    <p>Llevas <strong>{{ obtenidos }}</strong> de <strong>{{ items|length }}</strong> insignias. Cada una suma XP extra.</p>
+    <div class="logros-resumen__barra">
+      <progress class="barra barra--ambar" max="100" value="{{ porcentaje }}" aria-label="Insignias obtenidas"></progress>
+      <span>{{ porcentaje }} %</span>
+    </div>
+  </div>
+  <div class="logros-resumen__xp">
+    <span class="logros-resumen__valor">{{ xp_logros }}</span>
+    <span class="logros-resumen__etiqueta">XP ganados en insignias</span>
+  </div>
+</section>
+
+{% if items %}
+  {% if obtenidas %}
+  <section class="bloque-logros" aria-labelledby="t-obtenidas">
+    <h2 id="t-obtenidas" class="bloque-logros__titulo"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Obtenidas <span class="etiqueta">{{ obtenidas|length }}</span></h2>
+    <div class="rejilla-insignias">
+      {% for item in obtenidas %}{% include "components/insignia.html" %}{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if pendientes %}
+  <section class="bloque-logros" aria-labelledby="t-pendientes">
+    <h2 id="t-pendientes" class="bloque-logros__titulo"><i class="bi bi-bullseye" aria-hidden="true"></i> Por conseguir <span class="etiqueta">{{ pendientes|length }}</span></h2>
+    <div class="rejilla-insignias">
+      {% for item in pendientes %}{% include "components/insignia.html" %}{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% else %}
+  <div class="estado-vacio"><i class="bi bi-trophy" aria-hidden="true"></i><p>Todavía no hay logros configurados.</p></div>
+{% endif %}
+{% endblock %}

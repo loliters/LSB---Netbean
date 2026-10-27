@@ -87,11 +87,26 @@ class SignalXpTests(BaseGamificacion):
         self.sena.puntos_minimos = 80
         self.sena.save()
         resultado = services.registrar_intento(
-            usuario=self.usuario, sena=self.sena, letra_predicha="B", confianza=0.75
+            usuario=self.usuario, sena=self.sena, letra_predicha="B", confianza=0.65
         )
         self.assertFalse(resultado["es_correcta"])
         self.assertTrue(resultado["letra_coincide"])
         self.assertEqual(self.estadisticas().xp_total, 0)
+
+    def test_umbral_efectivo_tiene_tope_en_70(self):
+        self.sena.puntos_minimos = 80
+        self.assertEqual(services.umbral_efectivo(self.sena), 70)
+        self.sena.puntos_minimos = 60
+        self.assertEqual(services.umbral_efectivo(self.sena), 60)
+
+    def test_aprueba_con_75_aunque_la_sena_pida_80(self):
+        self.sena.puntos_minimos = 80
+        self.sena.save()
+        resultado = services.registrar_intento(
+            usuario=self.usuario, sena=self.sena, letra_predicha="B", confianza=0.75
+        )
+        self.assertTrue(resultado["es_correcta"])
+        self.assertEqual(resultado["puntos_minimos"], 70)
 
     def test_hu06_dominar_todas_las_senas_completa_la_leccion(self):
         resultado = services.registrar_intento(
@@ -153,3 +168,40 @@ class EvaluarEndpointTests(BaseGamificacion):
         respuesta = self._post(id_leccion=self.leccion.pk, id_sena=self.sena.pk, frame="x")
         self.assertFalse(respuesta.json()["registrado"])
         self.assertFalse(Practica.objects.exists())
+
+class RepasoSenaDominadaTests(BaseGamificacion):
+    """Una seña ya dominada se puede repasar, pero no suma XP."""
+
+    def _acertar(self):
+        return services.registrar_intento(usuario=self.usuario, sena=self.sena, letra_predicha="B", confianza=0.95)
+
+    @override_settings(XP_ENFRIAMIENTO_SEGUNDOS=0)
+    def test_primer_acierto_suma_xp_y_no_es_repaso(self):
+        resultado = self._acertar()
+        self.assertEqual(resultado["xp_ganado"], 30)
+        self.assertFalse(resultado["repaso"])
+
+    @override_settings(XP_ENFRIAMIENTO_SEGUNDOS=0)
+    def test_repaso_de_sena_dominada_no_suma_xp(self):
+        self._acertar()
+        resultado = self._acertar()
+        stats = self.estadisticas()
+        self.assertTrue(resultado["es_correcta"])
+        self.assertTrue(resultado["repaso"])
+        self.assertEqual(resultado["xp_ganado"], 0)
+        self.assertEqual(stats.xp_total, 30)          # no cambió
+        self.assertEqual(stats.total_practicas, 2)    # el intento sí se registra
+        self.assertTrue(ProgresoSena.objects.get(usuario=self.usuario, sena=self.sena).dominada)
+
+    @override_settings(XP_ENFRIAMIENTO_SEGUNDOS=0)
+    def test_pantalla_de_practica_advierte_si_ya_esta_dominada(self):
+        self.client.force_login(self.usuario)
+        url = reverse("reconocimiento:practica", args=[self.sena.pk])
+        antes = self.client.get(url)
+        self.assertNotContains(antes, "Practicar sin XP")
+        self.assertContains(antes, 'data-ya-dominada="false"')
+        self._acertar()
+        despues = self.client.get(url)
+        self.assertContains(despues, "Practicar sin XP")
+        self.assertContains(despues, "no sumarás")
+        self.assertContains(despues, 'data-ya-dominada="true"')
