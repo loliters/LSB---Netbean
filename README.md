@@ -7,7 +7,7 @@ Aplicación web para la enseñanza del Lenguaje de Señas Boliviano (LSB) con pa
 ## Instalación rápida
 
 ```bash
-git clone https://github.com/loliters/LSBWebb.git
+git clone [https://github.com/loliters/LSB---Netbean.git](https://github.com/loliters/LSB---Netbean.git)
 cd LSBWebb
 python -m venv venv
 source venv/bin/activate    # Windows: venv\Scripts\activate
