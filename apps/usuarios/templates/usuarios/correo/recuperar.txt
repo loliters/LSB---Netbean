@@ -1,0 +1,11 @@
+Hola {{ nombre }}:
+
+Recibimos una solicitud para crear una nueva contraseña en Net Bean.
+Abre este enlace para hacerlo:
+
+{{ enlace }}
+
+El enlace vence en {{ minutos }} minutos y solo se puede usar una vez.
+Si no lo pediste tú, ignora este correo: tu contraseña no cambia.
+
+Net Bean · Aprende lengua de señas
