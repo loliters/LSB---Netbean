@@ -6,8 +6,9 @@ from datetime import timedelta
 from typing import Callable
 
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
@@ -39,16 +40,8 @@ def registrar_estudiante(form) -> Usuario:
 
 
 @transaction.atomic
-def solicitar_recuperacion(correo: str, construir_url: Callable[[str], str]) -> str | None:
-    """Genera un token de 30 minutos y envía el enlace por correo (HU-12).
-
-    Args:
-        correo: Correo ya validado en formato.
-        construir_url: Función que convierte una ruta relativa en URL absoluta.
-
-    Returns:
-        El token plano (solo para pruebas) o None si el correo no existe.
-    """
+def _crear_token(correo: str) -> tuple[Usuario, str] | None:
+    """Invalida los tokens anteriores y crea uno nuevo de 30 minutos. None si el correo no existe."""
     usuario = Usuario.objects.filter(correo__iexact=correo, estado=True).first()
     if usuario is None:
         return None
@@ -59,19 +52,55 @@ def solicitar_recuperacion(correo: str, construir_url: Callable[[str], str]) -> 
         token_hash=hashear_token(token),
         fecha_expiracion=timezone.now() + timedelta(minutes=_minutos_token()),
     )
-    enlace = construir_url(reverse("usuarios:restablecer_password", args=[token]))
-    send_mail(
+    return usuario, token
+
+
+def _enlace_de_recuperacion(token: str, construir_url: Callable[[str], str]) -> str:
+    """URL absoluta del enlace. Si existe SITE_URL (.env) se usa ese dominio, útil para abrirlo desde el celular."""
+    ruta = reverse("usuarios:restablecer_password", args=[token])
+    base = getattr(settings, "SITE_URL", "").strip().rstrip("/")
+    return f"{base}{ruta}" if base else construir_url(ruta)
+
+
+def enviar_correo_recuperacion(usuario: Usuario, enlace: str) -> bool:
+    """Envía el correo (texto + HTML). Devuelve False y registra el error si no se pudo enviar."""
+    contexto = {"nombre": usuario.nombre, "enlace": enlace, "minutos": _minutos_token()}
+    mensaje = EmailMultiAlternatives(
         subject="Restablece tu contraseña de Net Bean",
-        message=(
-            f"Hola {usuario.nombre}:\n\n"
-            f"Usa este enlace para crear una nueva contraseña:\n{enlace}\n\n"
-            f"El enlace vence en {_minutos_token()} minutos. "
-            "Si no pediste el cambio, ignora este correo."
-        ),
-        from_email=None,
-        recipient_list=[usuario.correo],
+        body=render_to_string("usuarios/correo/recuperar.txt", contexto),
+        from_email=None,  # usa DEFAULT_FROM_EMAIL
+        to=[usuario.correo],
     )
-    logger.info("Token de recuperación generado para usuario %s", usuario.pk)
+    mensaje.attach_alternative(render_to_string("usuarios/correo/recuperar.html", contexto), "text/html")
+    try:
+        mensaje.send(fail_silently=False)
+    except Exception:  # SMTP, red, credenciales: la persona recibe el mismo mensaje genérico
+        logger.exception(
+            "No se pudo enviar el correo de recuperación (usuario %s, backend %s)",
+            usuario.pk, settings.EMAIL_BACKEND,
+        )
+        return False
+    return True
+
+
+def solicitar_recuperacion(correo: str, construir_url: Callable[[str], str]) -> str | None:
+    """Genera un token de 30 minutos y envía el enlace por correo (HU-12).
+
+    Args:
+        correo: Correo ya validado en formato.
+        construir_url: Función que convierte una ruta relativa en URL absoluta.
+
+    Returns:
+        El token plano (solo para pruebas) o None si el correo no existe. Nunca lanza
+        errores de envío: se registran en el log y la respuesta al usuario es siempre la misma,
+        para no revelar qué correos están registrados.
+    """
+    creado = _crear_token(correo)
+    if creado is None:
+        return None
+    usuario, token = creado
+    enviado = enviar_correo_recuperacion(usuario, _enlace_de_recuperacion(token, construir_url))
+    logger.info("Recuperación de contraseña: usuario %s, correo %s", usuario.pk, "enviado" if enviado else "NO enviado")
     return token
 
 
