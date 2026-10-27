@@ -1,10 +1,22 @@
+"""Logros de gamificación.
+
+Cambio: Logro.modulo (opcional) permite insignias de un módulo, como
+«Maestro de Vocales». Crear la migración con:
+    python manage.py makemigrations gamificacion --name agregar_modulo_logro
+"""
 from django.db import models
-from apps.usuarios.models import Usuario
+
 from apps.core.models import TipoLogro
+from apps.usuarios.models import Usuario
+
 
 class Logro(models.Model):
     id_logro = models.AutoField(primary_key=True, db_column='id_logro')
     tipo_logro = models.ForeignKey(TipoLogro, on_delete=models.PROTECT, db_column='id_tipo_logro')
+    modulo = models.ForeignKey(
+        'contenido.Modulo', on_delete=models.SET_NULL, null=True, blank=True,
+        db_column='id_modulo', related_name='logros',
+    )
     nombre = models.CharField(max_length=100, unique=True, db_column='nombre')
     descripcion = models.TextField(blank=True, null=True, db_column='descripcion')
     meta_valor = models.IntegerField(default=1, db_column='meta_valor')
