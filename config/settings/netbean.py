@@ -26,8 +26,23 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 TOKEN_RECUPERACION_MINUTOS = 30
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Net Bean <no-responder@netbean.local>")
-# En dev.py: EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# --- Correo (HU-12: recuperar contraseña) ---
+# Sin configurar nada, el correo se IMPRIME en la terminal (modo consola).
+# Para enviarlo de verdad, pon EMAIL_BACKEND y las credenciales en el archivo .env (ver LEEME_CORREO.md).
+# IMPORTANTE: dev.py no debe definir EMAIL_BACKEND, porque se ejecuta después y lo pisaría.
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"   # puerto 587
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"  # puerto 465 (usar con EMAIL_USE_TLS=False)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "").replace(" ", "")  # la clave de Gmail se copia con espacios
+EMAIL_TIMEOUT = 15
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or (
+    f"Net Bean <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "Net Bean <no-responder@netbean.local>"
+)
+SITE_URL = os.getenv("SITE_URL", "")  # p. ej. http://192.168.1.20:8000 para abrir el enlace desde el celular
 
 # --- Inteligencia artificial (HU-04, HU-05) ---
 RUTA_MODELO_TFLITE = BASE_DIR / "ia" / "modelos" / "modelo_v1.tflite"
@@ -40,3 +55,7 @@ IA_ESPEJAR_FRAME = os.getenv("IA_ESPEJAR_FRAME", "False") == "True"
 # --- Gamificación (HU-06, HU-07) ---
 XP_POR_ACIERTO = 30
 XP_ENFRIAMIENTO_SEGUNDOS = 10  # evita sumar XP repetido por la misma seña en ráfaga
+
+# Práctica: aceptación automática (precisión mínima mantenida durante N segundos)
+PRACTICA_UMBRAL_AUTO = 70      # % mínimo de precisión para aprobar una seña
+PRACTICA_SEGUNDOS_AUTO = 2     # segundos continuos por encima del umbral
