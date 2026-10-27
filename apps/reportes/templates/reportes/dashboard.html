@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Reportes · Net Bean{% endblock %}
+{% block titulo_pagina %}Reportes{% endblock %}
+
+{% block contenido %}
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Reporte de progreso{% if es_profesor %} <span class="etiqueta">Solo tus estudiantes</span>{% endif %}</h1>
+    <p class="texto-suave">{{ reporte.filtros.descripcion }}</p>
+  </div>
+  <div class="acciones-fila">
+    <a class="btn-nb btn-nb--secundario" href="{% url 'reportes:exportar_excel' %}{% if consulta %}?{{ consulta }}{% endif %}"><i class="bi bi-file-earmark-excel" aria-hidden="true"></i>Descargar Excel</a>
+    <a class="btn-nb btn-nb--primario" href="{% url 'reportes:exportar_pdf' %}{% if consulta %}?{{ consulta }}{% endif %}"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>Descargar PDF</a>
+  </div>
+</header>
+
+<form class="filtros" method="get" aria-label="Filtros del reporte">
+  <label class="filtro"><span>{{ form.desde.label }}</span>{{ form.desde }}</label>
+  <label class="filtro"><span>{{ form.hasta.label }}</span>{{ form.hasta }}</label>
+  <label class="filtro"><span>{{ form.modulo.label }}</span>{{ form.modulo }}</label>
+  <label class="filtro"><span>{{ form.estudiante.label }}</span>{{ form.estudiante }}</label>
+  <button type="submit" class="btn-nb btn-nb--secundario">Aplicar</button>
+</form>
+{% for campo, errores in form.errors.items %}{% for error in errores %}<p class="alerta-form" role="alert">{{ error }} Se muestran los últimos 30 días.</p>{% endfor %}{% endfor %}
+
+{% with r=reporte.resumen %}
+<section class="stats" aria-label="Indicadores">
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+    <div><p class="stat__etiqueta">Estudiantes activos</p><p class="stat__valor">{{ r.estudiantes_activos }}</p><p class="stat__nota">de {{ r.estudiantes_registrados }} registrados</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-camera-video-fill"></i></span>
+    <div><p class="stat__etiqueta">Intentos de práctica</p><p class="stat__valor">{{ r.intentos }}</p><p class="stat__nota">{{ r.aciertos }} aciertos</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-bullseye"></i></span>
+    <div><p class="stat__etiqueta">Tasa de acierto</p><p class="stat__valor">{{ r.tasa_acierto }} %</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-star-fill"></i></span>
+    <div><p class="stat__etiqueta">XP otorgado</p><p class="stat__valor">{{ r.xp_otorgado }}</p><p class="stat__nota">{{ r.lecciones_completadas }} lecciones completadas</p></div></div>
+</section>
+{% endwith %}
+
+{% if reporte.sin_actividad and not sin_estudiantes %}
+<section class="tarjeta" aria-labelledby="t-sin-act" style="margin-bottom: 1rem">
+  <h2 id="t-sin-act" class="tarjeta__titulo">Sin actividad en este periodo ({{ reporte.sin_actividad|length }})</h2>
+  <p class="texto-suave" style="margin:0">{% for e in reporte.sin_actividad|slice:":12" %}{{ e.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if reporte.sin_actividad|length > 12 %} y {{ reporte.sin_actividad|length|add:"-12" }} más{% endif %}.</p>
+</section>
+{% endif %}
+
+{% if reporte.resumen.intentos %}
+<div class="rejilla-graficos">
+  <section class="tarjeta tarjeta--grafico" aria-labelledby="t-dias">
+    <h2 id="t-dias" class="tarjeta__titulo">Prácticas por día</h2>
+    <div class="grafico" id="grafico-dias" role="img" aria-label="Intentos y aciertos por día"></div>
+  </section>
+  <section class="tarjeta tarjeta--grafico" aria-labelledby="t-resultado">
+    <h2 id="t-resultado" class="tarjeta__titulo">Resultado de los intentos</h2>
+    <div class="grafico grafico--chico" id="grafico-resultado" role="img" aria-label="Aciertos frente a intentos fallidos"></div>
+  </section>
+</div>
+
+<div class="rejilla-panel">
+  <section class="tarjeta tarjeta--grafico" aria-labelledby="t-senas">
+    <h2 id="t-senas" class="tarjeta__titulo">Señas que necesitan refuerzo</h2>
+    <p class="texto-suave">Las 10 señas con menor tasa de acierto en el periodo.</p>
+    <div class="grafico grafico--alto" id="grafico-senas" role="img" aria-label="Tasa de acierto por seña"></div>
+  </section>
+  <section class="tarjeta" aria-labelledby="t-ranking">
+    <h2 id="t-ranking" class="tarjeta__titulo">Estudiantes con más XP</h2>
+    <ol class="ranking">
+      {% for e in ranking %}
+        <li class="ranking__fila">
+          <span class="ranking__puesto">{{ forloop.counter }}</span>
+          <span class="ranking__nombre">{{ e.nombre }}<small>{{ e.tasa }} % de acierto · racha {{ e.racha }}</small></span>
+          <strong class="ranking__xp">{{ e.xp_periodo }} XP</strong>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+</div>
+
+<section aria-labelledby="t-tabla">
+  <h2 id="t-tabla" class="seccion-cabecera">Detalle por seña</h2>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th scope="col">Seña</th><th scope="col">Módulo</th><th scope="col" class="tabla__numero">Intentos</th><th scope="col" class="tabla__numero">Aciertos</th><th scope="col" class="tabla__numero">Acierto</th><th scope="col" class="tabla__numero">Puntaje promedio</th><th scope="col" class="tabla__numero">Estudiantes</th></tr></thead>
+      <tbody>
+        {% for f in reporte.por_sena %}
+          <tr><td><strong class="sena-nombre">{{ f.sena }}</strong></td><td>{{ f.modulo }}</td><td class="tabla__numero">{{ f.intentos }}</td><td class="tabla__numero">{{ f.aciertos }}</td><td class="tabla__numero">{{ f.tasa }} %</td><td class="tabla__numero">{{ f.puntaje_promedio }} %</td><td class="tabla__numero">{{ f.estudiantes }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{ graficos|json_script:"datos-graficos" }}
+{% elif sin_estudiantes %}
+  <div class="estado-vacio">
+    <i class="bi bi-mortarboard" aria-hidden="true"></i>
+    <h2>Aún no monitoreas a ningún estudiante</h2>
+    <p>Los reportes del profesor muestran solo a los estudiantes que te asignaste.</p>
+    <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:profesor_estudiantes' %}">Elegir estudiantes</a>
+  </div>
+{% else %}
+  <div class="estado-vacio">
+    <i class="bi bi-bar-chart" aria-hidden="true"></i>
+    <h2>Sin prácticas en este periodo</h2>
+    <p>Amplía el rango de fechas o elige otro módulo o estudiante.</p>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {% if reporte.resumen.intentos %}
+    <script src="{% static 'js/reportes.js' %}?v=2" defer></script>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Net Bean · Aprende Lengua de Señas Boliviana{% endblock %}
+{% block clase_body %}pagina-inicio{% endblock %}
+
+{% block contenido %}
+<section class="portada">
+  <div class="container portada__rejilla">
+    <div class="portada__texto">
+      <h1>Aprende Lengua de Señas Boliviana con tu cámara</h1>
+      <p>Haz la seña frente a la cámara y una red neuronal convolucional te dice al instante si es correcta. Practica a tu ritmo, suma experiencia y mantén tu racha.</p>
+      <div class="portada__acciones">
+        <a class="btn-nb btn-nb--claro btn-nb--grande" href="{% url 'usuarios:registro' %}">Comenzar ahora</a>
+        <a class="btn-nb btn-nb--borde-claro btn-nb--grande" href="{% url 'usuarios:login' %}">Ya tengo cuenta</a>
+      </div>
+      <ul class="portada__rasgos">
+        <li><i class="bi bi-camera-video" aria-hidden="true"></i>Reconocimiento en tiempo real</li>
+        <li><i class="bi bi-journal-text" aria-hidden="true"></i>Lecciones por módulos</li>
+        <li><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>Tu progreso, siempre</li>
+      </ul>
+    </div>
+
+    <figure class="demo" aria-label="Ejemplo de una práctica evaluada">
+      <div class="demo__visor">
+        <span class="demo__letra" aria-hidden="true">A</span>
+        <span class="demo__caja" aria-hidden="true"></span>
+        <span class="demo__chip"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Correcto</span>
+      </div>
+      <figcaption class="demo__resultado">
+        {% include "components/anillo.html" with porcentaje=92 tono="exito" etiqueta="coincidencia" %}
+        <div>
+          <strong>Letra A</strong>
+          <span>+30 XP · racha de 5 días</span>
+        </div>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="pasos container" aria-labelledby="titulo-pasos">
+  <h2 id="titulo-pasos">Así se practica</h2>
+  <ol class="pasos__lista">
+    <li><strong>Elige una lección</strong><span>Alfabeto, saludos, números y más, ordenados por dificultad.</span></li>
+    <li><strong>Haz la seña</strong><span>Mira la referencia y repítela frente a la cámara con buena luz.</span></li>
+    <li><strong>Recibe tu resultado</strong><span>Ves el porcentaje de coincidencia y ganas 30 XP por cada acierto.</span></li>
+  </ol>
+</section>
+
+<section class="franja">
+  <div class="container franja__fila">
+    {% include "components/isotipo.html" %}
+    <p><strong>La tecnología también incluye.</strong> Aprende, comunica, conecta.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block clase_body %}pagina-auth{% endblock %}
+
+{% block cuerpo %}
+<main id="contenido" class="auth">
+  <section class="auth__panel">
+    <a class="marca marca--grande" href="{% url 'inicio' %}">{% include "components/isotipo.html" %}<span>Net Bean</span></a>
+    <p class="auth__lema">Tu espacio para aprender Lengua de Señas</p>
+    <div class="auth__visual" aria-hidden="true">
+      <i class="bi bi-hand-index-thumb"></i>
+      <span class="auth__escaneo"></span>
+    </div>
+    <p class="auth__nota">La IA reconoce tus gestos con una red neuronal convolucional y te muestra al instante qué tan cerca estás de la seña correcta.</p>
+  </section>
+
+  <section class="auth__formulario">
+    {% block pestanas %}{% endblock %}
+    {% include "components/mensajes.html" %}
+    {% block formulario %}{% endblock %}
+  </section>
+</main>
+{% endblock %}

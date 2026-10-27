@@ -1,0 +1,26 @@
+{# Insignia. Uso: {% include "components/insignia.html" with item=item %} #}
+<article class="insignia insignia--{{ item.logro.tipo_logro.metrica }}{% if item.obtenido %} insignia--obtenida{% else %} insignia--bloqueada{% endif %}">
+  <div class="insignia__medalla" aria-hidden="true">
+    <i class="bi bi-{{ item.logro.icono|default:'award-fill' }}"></i>
+    {% if item.obtenido %}
+      <span class="insignia__sello"><i class="bi bi-check-lg"></i></span>
+    {% else %}
+      <span class="insignia__sello insignia__sello--candado"><i class="bi bi-lock-fill"></i></span>
+    {% endif %}
+  </div>
+  <div class="insignia__cuerpo">
+    <div class="insignia__cabeza">
+      <h3 class="insignia__nombre">{{ item.logro.nombre }}</h3>
+      <span class="insignia__xp">+{{ item.logro.xp_bonus }} XP</span>
+    </div>
+    <p class="insignia__descripcion">{{ item.logro.descripcion|default:"" }}</p>
+    {% if item.obtenido %}
+      <p class="insignia__estado"><i class="bi bi-calendar-check" aria-hidden="true"></i> Obtenido el {{ item.fecha|date:"d/m/Y" }}</p>
+    {% else %}
+      <div class="insignia__progreso">
+        <progress class="barra" max="100" value="{{ item.porcentaje }}" aria-label="Avance hacia {{ item.logro.nombre }}"></progress>
+        <span>{{ item.actual }}/{{ item.logro.meta_valor }}</span>
+      </div>
+    {% endif %}
+  </div>
+</article>

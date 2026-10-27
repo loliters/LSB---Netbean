@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}{{ profesor.nombre_completo }} · Net Bean{% endblock %}
+{% block titulo_pagina %}Profesores{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="{% static 'css/asignaciones.css' %}?v=1">{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  <a href="{% url 'usuarios:gestion_profesores' %}">Profesores</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span aria-current="page">{{ profesor.nombre_completo }}</span>
+</nav>
+<header class="catalogo-cabecera">
+  <div>
+    <h1>{{ profesor.nombre_completo }}</h1>
+    <p class="texto-suave">{{ profesor.correo }} · monitorea a {{ total_asignados }} estudiante{{ total_asignados|pluralize }} · {{ contenidos }} asignaci{{ contenidos|pluralize:"ón,ones" }} de contenido</p>
+  </div>
+</header>
+
+<div class="aviso-regla" role="note">
+  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+  <p>Marca los estudiantes que este profesor debe monitorear y guarda. Al desmarcar a alguien, también se quita el contenido que ese profesor le había asignado.</p>
+</div>
+
+<section data-tabla-filtrable aria-label="Estudiantes">
+  <div class="filtros">
+    <div class="buscador">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <label class="visually-hidden" for="buscar-est">Buscar estudiante</label>
+      <input id="buscar-est" type="search" placeholder="Buscar por nombre o correo" data-filtro-texto autocomplete="off">
+    </div>
+    <label class="visually-hidden" for="filtro-asig">Filtrar</label>
+    <select id="filtro-asig" class="selector" data-filtro-estado>
+      <option value="">Todos</option><option value="asignado">Asignados</option><option value="libre">Sin asignar</option>
+    </select>
+    <span class="texto-suave" data-contador aria-live="polite"></span>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="barra-acciones">
+      <button type="button" class="btn-nb btn-nb--fantasma btn-nb--chico" data-marcar-todos>Marcar visibles</button>
+      <button type="submit" class="btn-nb btn-nb--primario btn-nb--chico"><i class="bi bi-check2-circle" aria-hidden="true"></i>Guardar asignaciones</button>
+      <a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'usuarios:gestion_profesores' %}">Cancelar</a>
+    </div>
+    <div class="tabla-contenedor">
+      <table class="tabla">
+        <thead><tr><th scope="col" class="tabla__check"><span class="visually-hidden">Asignado</span></th><th scope="col">Estudiante</th><th scope="col">Última práctica</th></tr></thead>
+        <tbody>
+          {% for f in filas %}
+            <tr data-fila data-busqueda="{{ f.estudiante.nombre_completo|lower }} {{ f.estudiante.correo|lower }}" data-estado="{% if f.asignado %}asignado{% else %}libre{% endif %}">
+              <td class="tabla__check"><input type="checkbox" name="estudiantes" value="{{ f.estudiante.pk }}"{% if f.asignado %} checked{% endif %} aria-label="Asignar a {{ f.estudiante.nombre_completo }}"></td>
+              <td><div class="tabla__usuario"><span class="usuario-chip__avatar" aria-hidden="true">{{ f.estudiante.iniciales }}</span><div><strong>{{ f.estudiante.nombre_completo }}</strong><span>{{ f.estudiante.correo }}</span></div></div></td>
+              <td>{{ f.ultima|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="texto-suave">Todavía no hay estudiantes registrados.</td></tr>
+          {% endfor %}
+          <tr data-sin-resultados hidden><td colspan="3" class="texto-suave">Ningún estudiante coincide con la búsqueda.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/panel-admin.js' %}" defer></script>
+  <script src="{% static 'js/asignaciones.js' %}" defer></script>
+{% endblock %}

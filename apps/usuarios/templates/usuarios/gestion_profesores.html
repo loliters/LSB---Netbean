@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Profesores · Net Bean{% endblock %}
+{% block titulo_pagina %}Profesores{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="{% static 'css/asignaciones.css' %}?v=1">{% endblock %}
+
+{% block contenido %}
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Profesores</h1>
+    <p class="texto-suave">Decide qué estudiantes monitorea cada profesor. Hay {{ total_estudiantes }} estudiante{{ total_estudiantes|pluralize }} activo{{ total_estudiantes|pluralize }} en el sistema.</p>
+  </div>
+  <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:gestion_usuario_nuevo' %}"><i class="bi bi-person-plus" aria-hidden="true"></i>Nuevo profesor</a>
+</header>
+
+{% if filas %}
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead><tr><th scope="col">Profesor</th><th scope="col" class="tabla__numero">Estudiantes</th><th scope="col" class="tabla__numero">Sin actividad</th><th scope="col">Último acceso</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+    <tbody>
+      {% for f in filas %}
+        <tr>
+          <td><div class="tabla__usuario"><span class="usuario-chip__avatar" aria-hidden="true">{{ f.profesor.iniciales }}</span><div><strong>{{ f.profesor.nombre_completo }}</strong><span>{{ f.profesor.correo }}</span></div></div></td>
+          <td class="tabla__numero">{{ f.estudiantes }}</td>
+          <td class="tabla__numero">{% if f.sin_actividad %}<span class="etiqueta etiqueta--aviso">{{ f.sin_actividad }}</span>{% else %}0{% endif %}</td>
+          <td>{{ f.ultimo_acceso|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+          <td><div class="tabla__acciones"><a class="btn-nb btn-nb--secundario btn-nb--chico" href="{% url 'usuarios:gestion_profesor_detalle' f.profesor.pk %}">Asignar estudiantes</a></div></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="estado-vacio">
+    <i class="bi bi-person-workspace" aria-hidden="true"></i>
+    <h2>Todavía no hay profesores</h2>
+    <p>Crea una cuenta con el rol Profesor para poder asignarle estudiantes.</p>
+    <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:gestion_usuario_nuevo' %}">Crear profesor</a>
+  </div>
+{% endif %}
+{% endblock %}

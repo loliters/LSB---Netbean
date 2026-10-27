@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} · Net Bean{% endblock %}
+{% block titulo_pagina %}Contenido{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  {% for texto, url in migas %}<a href="{{ url }}">{{ texto }}</a><i class="bi bi-chevron-right" aria-hidden="true"></i>{% endfor %}
+  <span aria-current="page">{{ titulo }}</span>
+</nav>
+
+<section class="tarjeta formulario-gestion">
+  <h1 class="auth__titulo">{{ titulo }}</h1>
+  <form method="post" novalidate{% if multipart %} enctype="multipart/form-data"{% endif %}>
+    {% csrf_token %}
+    {% for error in form.non_field_errors %}<p class="alerta-form" role="alert">{{ error }}</p>{% endfor %}
+    {% if object.url_imagen %}
+      <div class="vista-previa">
+        <img src="{{ object.url_imagen }}" alt="Imagen actual de {{ object.nombre }}">
+        <p class="campo__ayuda">Imagen actual. Sube otra solo si quieres reemplazarla.</p>
+      </div>
+    {% endif %}
+    {% for campo in form %}
+      {% include "components/campo.html" with campo=campo %}
+    {% endfor %}
+    <div class="acciones-fila">
+      <button type="submit" class="btn-nb btn-nb--primario">{{ accion }}</button>
+      <a class="btn-nb btn-nb--fantasma" href="{{ cancelar_url }}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

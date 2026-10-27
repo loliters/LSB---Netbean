@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} · Net Bean{% endblock %}
+{% block titulo_pagina %}Usuarios{% endblock %}
+
+{% block contenido %}
+<nav class="migas" aria-label="Ruta">
+  <a href="{% url 'usuarios:gestion_usuarios' %}">Usuarios</a><i class="bi bi-chevron-right" aria-hidden="true"></i>
+  <span aria-current="page">{{ titulo }}</span>
+</nav>
+
+<section class="tarjeta formulario-gestion">
+  <h1 class="auth__titulo">{{ titulo }}</h1>
+  {% if object %}<p class="texto-suave">Registrado el {{ object.fecha_registro|date:"d/m/Y" }}.</p>{% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for error in form.non_field_errors %}<p class="alerta-form" role="alert">{{ error }}</p>{% endfor %}
+    <div class="campos-dobles">
+      {% include "components/campo.html" with campo=form.nombre icono="person" %}
+      {% include "components/campo.html" with campo=form.apellido icono="person" %}
+    </div>
+    {% include "components/campo.html" with campo=form.correo icono="envelope" %}
+    {% include "components/campo.html" with campo=form.rol icono="shield" %}
+    {% if form.password1 %}
+      {% include "components/campo.html" with campo=form.password1 icono="lock" %}
+      {% include "components/campo.html" with campo=form.password2 icono="lock" %}
+    {% endif %}
+    {% if form.estado %}
+      <div class="campo">
+        <label class="casilla">{{ form.estado }}<span>Cuenta activa</span></label>
+        <p class="campo__ayuda">Si la desmarcas, la persona no podrá iniciar sesión. Su historial se conserva.</p>
+        {% for error in form.estado.errors %}<p class="campo__error" role="alert">{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+    <div class="acciones-fila">
+      <button type="submit" class="btn-nb btn-nb--primario">{{ accion }}</button>
+      <a class="btn-nb btn-nb--fantasma" href="{% url 'usuarios:gestion_usuarios' %}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

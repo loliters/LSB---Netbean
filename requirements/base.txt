@@ -17,3 +17,10 @@ boto3
 
 # Peticiones HTTP
 requests
+
+# Agregar a requirements/base.txt
+numpy==1.26.4
+protobuf==4.25.8
+mediapipe==0.10.32            # misma versión que dactilologiaMexicana (API Tasks)
+tensorflow==2.16.1            # ejecuta su model.tflite; TF 2.14 no soporta Python 3.12
+ 

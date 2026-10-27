@@ -1,23 +1,11 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
 load_dotenv(BASE_DIR / '.env')
 
-
-SECRET_KEY = os.getenv(
-    'SECRET_KEY',
-    'django-insecure-clave-local-desarrollo'
-)
-
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-
-
-# INSTALLED_APPS 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,25 +13,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Apps del proyecto
     'apps.usuarios',
     'apps.contenido',
     'apps.core',
     'apps.progreso',
-    'apps.gamificacion',
+    "apps.gamificacion.apps.GamificacionConfig",
     'apps.reportes',
     'apps.reconocimiento',
 ]
 
-AUTH_USER_MODEL = 'usuarios.Usuario'
-
-AUTHENTICATION_BACKENDS = [
-    'apps.usuarios.backends.CorreoBackend',  # Tu backend personalizado
-    'django.contrib.auth.backends.ModelBackend', # El de Django por si acaso
-]
-
-# MIDDLEWARE 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -53,7 +31,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 ROOT_URLCONF = 'config.urls'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 TEMPLATES = [
     {
@@ -71,32 +51,35 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
-
-# DATABASE - POSTGRESQL
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
-}
-
-# Archivos estáticos (CSS, JavaScript, imágenes)
 STATIC_URL = '/static/'
-
-# Opcional pero recomendado: dónde Django buscará archivos estáticos adicionales
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
-
-# Opcional: dónde se guardarán los archivos estáticos cuando hagas 'collectstatic' para producción
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Archivos multimedia (subidos por usuarios)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+LANGUAGE_CODE = 'es'
+TIME_ZONE = 'America/La_Paz'
+USE_I18N = True
+USE_TZ = True
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Autenticación
+#AUTH_USER_MODEL = 'usuarios.Usuario'
+#AUTHENTICATION_BACKENDS = [
+#    'apps.usuarios.backends.CorreoBackend',
+#    'django.contrib.auth.backends.ModelBackend',
+#]
+#LOGIN_URL = 'usuarios:login'
+#LOGIN_REDIRECT_URL = 'usuarios:panel_estudiante'
+
+# Inteligencia Artificial
+#RUTA_MODELO_TFLITE = BASE_DIR / 'ia' / 'modelos' / 'modelo_v1.tflite'
+#RUTA_ETIQUETAS = BASE_DIR / 'ia' / 'modelos' / 'etiquetas_v1.txt'
+#UMBRAL_CONFIANZA = 0.70
+#TAMANO_ENTRADA_MODELO = (224, 224)
+
+# Gamificación
+#XP_POR_ACIERTO = 30
+from .netbean import *  # noqa: E402,F401,F403

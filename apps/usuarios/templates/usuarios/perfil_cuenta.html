@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block titulo %}Mi cuenta · Net Bean{% endblock %}
+{% block titulo_pagina %}Mi cuenta{% endblock %}
+
+{% block contenido %}
+<section class="perfil-hero perfil-hero--cuenta" aria-label="Datos de la cuenta">
+  <div class="perfil-hero__identidad">
+    <span class="perfil-hero__avatar" aria-hidden="true">{{ user.iniciales }}</span>
+    <div>
+      <h1>{{ user.nombre_completo }}</h1>
+      <p class="perfil-hero__correo"><i class="bi bi-envelope" aria-hidden="true"></i> {{ user.correo }}</p>
+      <p class="perfil-hero__meta">
+        <span class="perfil-hero__rol">{{ user.rol.nombre_rol }}</span>
+        <span>Miembro desde el {{ user.fecha_registro|date:"d/m/Y" }}</span>
+        {% if user.ultimo_acceso %}<span>Último acceso {{ user.ultimo_acceso|date:"d/m/Y H:i" }}</span>{% endif %}
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="perfil-rejilla">
+  <div class="perfil-columna">
+    <section class="tarjeta" aria-labelledby="t-cuenta">
+      <h2 id="t-cuenta" class="tarjeta__titulo">Datos de la cuenta</h2>
+      <dl class="datos-cuenta">
+        <div><dt>Nombre</dt><dd>{{ user.nombre }}</dd></div>
+        <div><dt>Apellido</dt><dd>{{ user.apellido }}</dd></div>
+        <div><dt>Correo electrónico</dt><dd>{{ user.correo }}</dd></div>
+        <div><dt>Rol</dt><dd>{{ user.rol.nombre_rol }}</dd></div>
+        <div><dt>Estado</dt><dd>{% if user.estado %}Activa{% else %}Inactiva{% endif %}</dd></div>
+        <div><dt>Registro</dt><dd>{{ user.fecha_registro|date:"d/m/Y" }}</dd></div>
+        <div><dt>Último acceso</dt><dd>{% if user.ultimo_acceso %}{{ user.ultimo_acceso|date:"d/m/Y H:i" }}{% else %}—{% endif %}</dd></div>
+      </dl>
+    </section>
+
+    <section class="tarjeta" aria-labelledby="t-accesos">
+      <h2 id="t-accesos" class="tarjeta__titulo">{% if es_administrador %}Administración{% else %}Seguimiento{% endif %}</h2>
+      <p class="texto-suave">{% if es_administrador %}Gestiona usuarios, contenido y reportes del sistema.{% else %}Monitorea el avance de tus estudiantes y gestiona el contenido.{% endif %}</p>
+      <div class="acciones-fila">
+        <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:panel' %}"><i class="bi bi-house-door" aria-hidden="true"></i>Ir a mi panel</a>
+        <a class="btn-nb btn-nb--secundario" href="{% url 'reportes:dashboard' %}"><i class="bi bi-bar-chart-line" aria-hidden="true"></i>Reportes</a>
+        {% if es_administrador %}<a class="btn-nb btn-nb--secundario" href="{% url 'usuarios:gestion_usuarios' %}"><i class="bi bi-people" aria-hidden="true"></i>Usuarios</a>{% endif %}
+      </div>
+    </section>
+  </div>
+
+  <div class="perfil-columna">
+    <section class="tarjeta" aria-labelledby="t-clave">
+      <h2 id="t-clave" class="tarjeta__titulo">Cambiar contraseña</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "components/campo.html" with campo=form.actual icono="lock" %}
+        {% include "components/campo.html" with campo=form.password1 icono="key" %}
+        {% include "components/campo.html" with campo=form.password2 icono="key" %}
+        <button type="submit" class="btn-nb btn-nb--primario btn-nb--bloque">Guardar contraseña</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}
