@@ -1,7 +1,14 @@
+"""Progreso del estudiante: intentos, señas y lecciones.
+
+Iteración 5: Practica.es_correcta permite reportar la tasa de acierto (HU-10).
+Crear la migración con: python manage.py makemigrations progreso --name agregar_es_correcta_practica
+"""
 from django.db import models
-from apps.usuarios.models import Usuario
-from apps.contenido.models import Sena, Leccion
+
+from apps.contenido.models import Leccion, Sena
 from apps.core.models import EstadoProgreso
+from apps.usuarios.models import Usuario
+
 
 class ProgresoSena(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
@@ -16,7 +23,7 @@ class ProgresoSena(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['usuario', 'sena'], name='pk_progreso_sena_usuario_sena'),
             models.CheckConstraint(
-                condition=models.Q(mejor_puntaje__gte=0) & models.Q(mejor_puntaje__lte=100), 
+                condition=models.Q(mejor_puntaje__gte=0) & models.Q(mejor_puntaje__lte=100),
                 name='ck_progreso_sena_puntaje_rango'
             ),
             models.CheckConstraint(condition=models.Q(intentos__gte=0), name='ck_progreso_sena_intentos_no_negativo'),
@@ -47,6 +54,7 @@ class Practica(models.Model):
     fecha_practica = models.DateTimeField(auto_now_add=True, db_column='fecha_practica')
     puntaje_obtenido = models.DecimalField(max_digits=5, decimal_places=2, db_column='puntaje_obtenido')
     xp_ganado = models.IntegerField(default=0, db_column='xp_ganado')
+    es_correcta = models.BooleanField(default=False, db_column='es_correcta')
 
     class Meta:
         db_table = 'practica'
@@ -54,7 +62,7 @@ class Practica(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['usuario', 'sena', 'numero_intento'], name='uq_practica_usuario_sena_intento'),
             models.CheckConstraint(
-                condition=models.Q(puntaje_obtenido__gte=0) & models.Q(puntaje_obtenido__lte=100), 
+                condition=models.Q(puntaje_obtenido__gte=0) & models.Q(puntaje_obtenido__lte=100),
                 name='ck_practica_puntaje_rango'
             ),
             models.CheckConstraint(condition=models.Q(xp_ganado__gte=0), name='ck_practica_xp_no_negativo'),
