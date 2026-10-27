@@ -31,7 +31,7 @@ class PrediccionEndpointTests(TestCase):
         respuesta = self._post({"frame": FRAME_FALSO})
         self.assertEqual(respuesta.status_code, 200)
         self.assertEqual(respuesta.json()["letra"], "B")
-        predecir.assert_called_once_with(FRAME_FALSO)
+        predecir.assert_called_once_with(FRAME_FALSO, modo="letra")
 
     def test_hu05_ca5_sin_frame_responde_400(self):
         self.assertEqual(self._post({}).status_code, 400)

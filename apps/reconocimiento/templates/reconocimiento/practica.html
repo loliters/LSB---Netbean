@@ -12,8 +12,8 @@
 
 <header class="practica-cabecera">
   <div>
-    <h1>Practica la seña «{{ sena.nombre }}»</h1>
-    <p class="texto-suave">La cámara reconoce tu gesto en tiempo real. Busca buena luz y un fondo sencillo.</p>
+    <h1>{% if modo == "numero" %}Muestra el número {{ sena.nombre }}{% else %}Practica la seña «{{ sena.nombre }}»{% endif %}</h1>
+    <p class="texto-suave">Buena luz, fondo sencillo y la mano completa dentro del cuadro. Se aprueba con {{ sena.puntos_minimos }} % o más.</p>
   </div>
   <div class="avance-leccion">
     <span class="etiqueta">Seña {{ posicion }} de {{ total }}</span>
@@ -22,31 +22,45 @@
   </div>
 </header>
 
+<div id="aviso-repaso" class="aviso-repaso" role="status"{% if not ya_dominada %} hidden{% endif %}>
+  <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+  <p><strong>Modo repaso.</strong> Ya dominaste esta seña: puedes seguir practicándola, pero no sumarás más XP.</p>
+</div>
+
 <div id="practica" class="practica"
      data-url-prediccion="{% url 'reconocimiento:predecir' %}"
      data-url-evaluacion="{% url 'gamificacion:evaluar' %}"
-     data-id-sena="{{ sena.pk }}"
-     data-id-leccion="{{ sena.leccion_id }}"
-     data-letra-objetivo="{{ sena.nombre }}"
-     data-umbral="{{ sena.puntos_minimos }}"
-     data-url-modulo="{% url 'contenido:detalle_modulo' sena.leccion.modulo_id %}">
+     data-id-sena="{{ sena.pk }}" data-id-leccion="{{ sena.leccion_id }}"
+     data-letra-objetivo="{{ sena.nombre }}" data-umbral="{{ sena.puntos_minimos }}" data-modo="{{ modo }}"
+     data-ya-dominada="{% if ya_dominada %}true{% else %}false{% endif %}">
 
   <section class="camara" aria-label="Cámara">
     <div class="camara__marco" data-estado="apagada">
       <video id="camara-video" class="camara__video" autoplay playsinline muted></video>
       <canvas id="camara-guia" class="camara__guia" aria-hidden="true"></canvas>
-      <span id="camara-etiqueta" class="camara__etiqueta" hidden></span>
-      <div id="camara-aviso" class="camara__aviso">
-        <i class="bi bi-camera-video" aria-hidden="true"></i>
-        <p id="camara-aviso-texto">Activa la cámara para empezar. El video no se guarda.</p>
-        <button id="btn-camara" type="button" class="btn-nb btn-nb--primario">Activar cámara</button>
+      <div class="camara__zona" aria-hidden="true"></div>
+      <span id="camara-etiqueta" class="camara__etiqueta">Correcto</span>
+      <div id="camara-aviso" class="camara__aviso{% if ya_dominada %} camara__aviso--repaso{% endif %}">
+        {% if ya_dominada %}
+          <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
+          <p class="camara__aviso-titulo">Ya dominaste esta seña</p>
+          <p id="camara-aviso-texto">Puedes volver a practicarla, pero no sumarás puntos de experiencia (XP). El video no se guarda.</p>
+          <div class="camara__aviso-acciones">
+            <button id="btn-camara" type="button" class="btn-nb btn-nb--primario">Practicar sin XP</button>
+            <a class="btn-nb btn-nb--borde-claro" href="{% url 'contenido:detalle_modulo' sena.leccion.modulo_id %}">Volver al módulo</a>
+          </div>
+        {% else %}
+          <i class="bi bi-camera-video" aria-hidden="true"></i>
+          <p id="camara-aviso-texto">Activa la cámara para empezar. El video no se guarda.</p>
+          <button id="btn-camara" type="button" class="btn-nb btn-nb--primario">Activar cámara</button>
+        {% endif %}
       </div>
     </div>
     <div class="camara__controles">
       <label class="interruptor">
         <input type="checkbox" id="mostrar-guia" checked>
         <span class="interruptor__pista" aria-hidden="true"></span>
-        <span>Mostrar guía</span>
+        <span>Mostrar guía de puntos</span>
       </label>
       <button id="btn-evaluar" type="button" class="btn-nb btn-nb--secundario" disabled>
         <i class="bi bi-lightning-charge" aria-hidden="true"></i>Evaluar ahora
@@ -61,15 +75,18 @@
       {% endif %}
       <div>
         <p class="referencia__letra" aria-hidden="true">{{ sena.nombre }}</p>
-        <p class="texto-suave">Imita la referencia. Se aprueba con {{ sena.puntos_minimos }}% o más.</p>
+        <p class="texto-suave" id="consejo-sena">Imita la referencia.</p>
       </div>
     </div>
 
-    <div class="tarjeta precision" aria-live="polite">
+    <div class="tarjeta precision">
       {% include "components/anillo.html" with porcentaje=0 tono="neutro" etiqueta="precisión" %}
       <div class="precision__texto">
-        <p id="estado-texto" class="precision__estado">Esperando tu seña</p>
-        <p class="texto-suave">Detectada: <strong id="letra-detectada">—</strong></p>
+        <p class="precision__detectada">Detectada: <strong id="letra-detectada">—</strong></p>
+        <div class="feedback" aria-live="polite">
+          <p id="estado-texto" class="feedback__titulo">Esperando tu seña</p>
+          <p id="feedback-detalle" class="feedback__detalle">Activa la cámara y muestra tu mano.</p>
+        </div>
       </div>
     </div>
 
@@ -81,11 +98,11 @@
       <div class="marcador marcador--xp">
         <i class="bi bi-star-fill" aria-hidden="true"></i>
         <span><strong id="valor-xp">{{ estadisticas.xp_total }}</strong> XP</span>
-        <span id="xp-flotante" class="marcador__flotante" aria-hidden="true" hidden>+30</span>
+        <span id="xp-flotante" class="marcador__flotante" aria-hidden="true">+30</span>
       </div>
     </div>
 
-    <div id="resultado" class="resultado" role="status" hidden>
+    <div id="resultado" class="resultado" role="status" data-visible="false">
       <i id="resultado-icono" class="bi" aria-hidden="true"></i>
       <div>
         <p id="resultado-titulo" class="resultado__titulo"></p>
