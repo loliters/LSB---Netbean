@@ -10,7 +10,7 @@
       </a>
     </li>
     <li>
-      <a class="sidebar__link{% if 'contenido:' in actual %} activo{% endif %}" href="{% url 'contenido:mapa_modulos' %}"{% if 'contenido:' in actual %} aria-current="page"{% endif %}>
+      <a class="sidebar__link{% if 'contenido:' in actual and 'gestion' not in actual %} activo{% endif %}" href="{% url 'contenido:mapa_modulos' %}"{% if 'contenido:' in actual and 'gestion' not in actual %} aria-current="page"{% endif %}>
         <i class="bi bi-grid" aria-hidden="true"></i><span>Módulos</span>
       </a>
     </li>
@@ -21,18 +21,52 @@
         </a>
       </li>
       <li>
-        <a class="sidebar__link" href="{% url 'usuarios:panel_estudiante' %}#progreso">
-          <i class="bi bi-bar-chart-line" aria-hidden="true"></i><span>Progreso</span>
+        <a class="sidebar__link{% if 'gamificacion:' in actual %} activo{% endif %}" href="{% url 'gamificacion:logros' %}"{% if 'gamificacion:' in actual %} aria-current="page"{% endif %}>
+          <i class="bi bi-trophy" aria-hidden="true"></i><span>Logros</span>
+        </a>
+      </li>
+    {% endif %}
+    {% if rol == "profesor" %}
+      <li>
+        <a class="sidebar__link{% if actual == 'usuarios:profesor_estudiantes' %} activo{% endif %}" href="{% url 'usuarios:profesor_estudiantes' %}"{% if actual == 'usuarios:profesor_estudiantes' %} aria-current="page"{% endif %}>
+          <i class="bi bi-mortarboard" aria-hidden="true"></i><span>Mis estudiantes</span>
+        </a>
+      </li>
+      <li>
+        <a class="sidebar__link{% if 'usuarios:profesor_contenido' in actual %} activo{% endif %}" href="{% url 'usuarios:profesor_contenido' %}"{% if 'usuarios:profesor_contenido' in actual %} aria-current="page"{% endif %}>
+          <i class="bi bi-list-check" aria-hidden="true"></i><span>Asignar contenido</span>
+        </a>
+      </li>
+    {% endif %}
+    {% if rol == "administrador" or rol == "profesor" %}
+      <li>
+        <a class="sidebar__link{% if 'contenido:gestion' in actual %} activo{% endif %}" href="{% url 'contenido:gestion_modulos' %}"{% if 'contenido:gestion' in actual %} aria-current="page"{% endif %}>
+          <i class="bi bi-journal-plus" aria-hidden="true"></i><span>Contenido</span>
+        </a>
+      </li>
+      <li>
+        <a class="sidebar__link{% if 'reportes:' in actual %} activo{% endif %}" href="{% url 'reportes:dashboard' %}"{% if 'reportes:' in actual %} aria-current="page"{% endif %}>
+          <i class="bi bi-bar-chart-line" aria-hidden="true"></i><span>Reportes</span>
         </a>
       </li>
     {% endif %}
     {% if rol == "administrador" %}
       <li>
-        <a class="sidebar__link{% if 'usuarios:gestion' in actual %} activo{% endif %}" href="{% url 'usuarios:gestion_usuarios' %}"{% if 'usuarios:gestion' in actual %} aria-current="page"{% endif %}>
+        <a class="sidebar__link{% if 'usuarios:gestion_usuario' in actual %} activo{% endif %}" href="{% url 'usuarios:gestion_usuarios' %}"{% if 'usuarios:gestion_usuario' in actual %} aria-current="page"{% endif %}>
           <i class="bi bi-people" aria-hidden="true"></i><span>Usuarios</span>
         </a>
       </li>
+      <li>
+        <a class="sidebar__link{% if 'usuarios:gestion_profesor' in actual %} activo{% endif %}" href="{% url 'usuarios:gestion_profesores' %}"{% if 'usuarios:gestion_profesor' in actual %} aria-current="page"{% endif %}>
+          <i class="bi bi-person-workspace" aria-hidden="true"></i><span>Profesores</span>
+        </a>
+      </li>
     {% endif %}
+    <li>
+      <a class="sidebar__link{% if actual == 'usuarios:perfil' %} activo{% endif %}" href="{% url 'usuarios:perfil' %}"{% if actual == 'usuarios:perfil' %} aria-current="page"{% endif %}>
+        <i class="bi bi-person-badge" aria-hidden="true"></i><span>Perfil</span>
+      </a>
+    </li>
     {% if user.is_staff %}
       <li>
         <a class="sidebar__link" href="{% url 'admin:index' %}">
