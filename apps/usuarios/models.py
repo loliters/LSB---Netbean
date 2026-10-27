@@ -136,3 +136,122 @@ class EstadisticasUsuario(models.Model):
                 condition=models.Q(total_practicas__gte=0), name="ck_estadistica_practicas_no_negativas"
             ),
         ]
+
+
+class AsignacionProfesor(models.Model):
+    """Un profesor monitorea a un estudiante (HU-13).
+
+    Un estudiante puede tener varios profesores. La asignación se desactiva (activo = False),
+    no se borra, para conservar el historial.
+    """
+
+    id_asignacion_profesor = models.AutoField(primary_key=True, db_column="id_asignacion_profesor")
+    profesor = models.ForeignKey(
+        "usuarios.Usuario", on_delete=models.CASCADE, db_column="id_profesor",
+        related_name="asignaciones_como_profesor",
+    )
+    estudiante = models.ForeignKey(
+        "usuarios.Usuario", on_delete=models.CASCADE, db_column="id_estudiante",
+        related_name="asignaciones_como_estudiante",
+    )
+    asignado_por = models.ForeignKey(
+        "usuarios.Usuario", on_delete=models.SET_NULL, null=True, blank=True,
+        db_column="id_asignado_por", related_name="+",
+    )
+    fecha_asignacion = models.DateTimeField(auto_now_add=True, db_column="fecha_asignacion")
+    activo = models.BooleanField(default=True, db_column="activo")
+
+    class Meta:
+        db_table = "asignacion_profesor"
+        verbose_name = "Asignación de profesor"
+        verbose_name_plural = "Asignaciones de profesor"
+        constraints = [
+            models.UniqueConstraint(fields=["profesor", "estudiante"], name="uq_asignacion_profesor_par"),
+            models.CheckConstraint(
+                condition=~models.Q(profesor=models.F("estudiante")),
+                name="ck_asignacion_profesor_distintos",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.profesor.nombre_completo} → {self.estudiante.nombre_completo}"
+
+
+class AsignacionContenido(models.Model):
+    """Qué módulo, lección o seña ve un estudiante, según su profesor (HU-13).
+
+    Cada fila apunta a exactamente uno de los tres. Si un estudiante no tiene ninguna
+    asignación activa, ve todo el contenido activo; con una o más, ve solo lo asignado.
+    """
+
+    id_asignacion_contenido = models.AutoField(primary_key=True, db_column="id_asignacion_contenido")
+    profesor = models.ForeignKey(
+        "usuarios.Usuario", on_delete=models.CASCADE, db_column="id_profesor",
+        related_name="contenidos_asignados",
+    )
+    estudiante = models.ForeignKey(
+        "usuarios.Usuario", on_delete=models.CASCADE, db_column="id_estudiante",
+        related_name="contenidos_recibidos",
+    )
+    modulo = models.ForeignKey(
+        "contenido.Modulo", on_delete=models.CASCADE, null=True, blank=True,
+        db_column="id_modulo", related_name="asignaciones",
+    )
+    leccion = models.ForeignKey(
+        "contenido.Leccion", on_delete=models.CASCADE, null=True, blank=True,
+        db_column="id_leccion", related_name="asignaciones",
+    )
+    sena = models.ForeignKey(
+        "contenido.Sena", on_delete=models.CASCADE, null=True, blank=True,
+        db_column="id_sena", related_name="asignaciones",
+    )
+    fecha_asignacion = models.DateTimeField(auto_now_add=True, db_column="fecha_asignacion")
+    activo = models.BooleanField(default=True, db_column="activo")
+
+    class Meta:
+        db_table = "asignacion_contenido"
+        verbose_name = "Asignación de contenido"
+        verbose_name_plural = "Asignaciones de contenido"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(modulo__isnull=False, leccion__isnull=True, sena__isnull=True)
+                    | models.Q(modulo__isnull=True, leccion__isnull=False, sena__isnull=True)
+                    | models.Q(modulo__isnull=True, leccion__isnull=True, sena__isnull=False)
+                ),
+                name="ck_asignacion_contenido_un_objetivo",
+            ),
+            models.UniqueConstraint(
+                fields=["profesor", "estudiante", "modulo"], condition=models.Q(modulo__isnull=False),
+                name="uq_asignacion_contenido_modulo",
+            ),
+            models.UniqueConstraint(
+                fields=["profesor", "estudiante", "leccion"], condition=models.Q(leccion__isnull=False),
+                name="uq_asignacion_contenido_leccion",
+            ),
+            models.UniqueConstraint(
+                fields=["profesor", "estudiante", "sena"], condition=models.Q(sena__isnull=False),
+                name="uq_asignacion_contenido_sena",
+            ),
+        ]
+
+    @property
+    def tipo(self) -> str:
+        if self.modulo_id:
+            return "Módulo"
+        return "Lección" if self.leccion_id else "Seña"
+
+    @property
+    def objetivo(self):
+        return self.modulo or self.leccion or self.sena
+
+    @property
+    def nombre_objetivo(self) -> str:
+        if self.sena_id:
+            return f"{self.sena.nombre} · {self.sena.leccion.nombre}"
+        if self.leccion_id:
+            return f"{self.leccion.nombre} · {self.leccion.modulo.nombre}"
+        return self.modulo.nombre
+
+    def __str__(self) -> str:
+        return f"{self.estudiante.nombre_completo}: {self.tipo} {self.nombre_objetivo}"
