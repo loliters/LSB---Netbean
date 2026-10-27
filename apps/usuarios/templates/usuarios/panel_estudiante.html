@@ -1,77 +1,72 @@
 {% extends "base.html" %}
+{% load static %}
 {% block titulo %}Inicio · Net Bean{% endblock %}
 {% block titulo_pagina %}Inicio{% endblock %}
 
 {% block contenido %}
-<header class="saludo">
-  <h1>Hola, {{ user.nombre }}</h1>
-  <p>Sigue aprendiendo. Cada gesto te acerca a tu objetivo.</p>
-</header>
-
-<section class="stats" aria-label="Resumen de tu aprendizaje">
-  <div class="stat">
-    <span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-shield-fill-check"></i></span>
-    <div><p class="stat__etiqueta">Nivel actual</p><p class="stat__valor">{{ nivel.numero_nivel|default:1 }}</p>
-      {% if nivel %}<p class="stat__nota">{{ nivel.nombre_nivel }}</p>{% endif %}</div>
+<section class="bienvenida" aria-label="Bienvenida">
+  <div class="bienvenida__texto">
+    <p class="bienvenida__nivel">{% if nivel %}Nivel {{ nivel.numero_nivel }} · {{ nivel.nombre_nivel }}{% else %}Nivel 1{% endif %}</p>
+    <h1>Hola, {{ user.nombre }}</h1>
+    <p class="bienvenida__frase">Cada gesto te acerca a tu objetivo.</p>
+    <div class="bienvenida__nivel-barra">
+      <progress class="barra barra--ambar barra--sobre-oscuro" max="100" value="{{ porcentaje_nivel }}" aria-label="Avance al siguiente nivel"></progress>
+      <span>{% if siguiente_nivel %}{{ xp_faltante }} XP para el nivel {{ siguiente_nivel.numero_nivel }}{% else %}Nivel máximo{% endif %}</span>
+    </div>
   </div>
-  <div class="stat">
-    <span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-star-fill"></i></span>
-    <div><p class="stat__etiqueta">XP total</p><p class="stat__valor">{{ estadisticas.xp_total }}</p></div>
-  </div>
-  <div class="stat">
-    <span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-fire"></i></span>
-    <div><p class="stat__etiqueta">Racha</p><p class="stat__valor">{{ estadisticas.racha_dias }}</p>
-      <p class="stat__nota">{% if estadisticas.racha_dias == 1 %}día{% else %}días{% endif %}</p></div>
-  </div>
-  <div class="stat">
-    <span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
-    <div><p class="stat__etiqueta">Lecciones completadas</p><p class="stat__valor">{{ lecciones_completadas }}</p></div>
-  </div>
+  <a class="bienvenida__accion" href="{% url 'reconocimiento:continuar' %}">
+    <i class="bi bi-camera-video-fill" aria-hidden="true"></i>
+    <span>
+      <strong>Continuar practicando</strong>
+      <small>{% if modulo_actual %}{{ modulo_actual.nombre }} · {{ modulo_actual.porcentaje }} % dominado{% else %}Empieza por las vocales{% endif %}</small>
+    </span>
+    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+  </a>
 </section>
 
-<div class="rejilla-panel">
-  <section class="tarjeta" id="progreso" aria-labelledby="titulo-progreso">
-    <h2 id="titulo-progreso" class="tarjeta__titulo">Tu progreso</h2>
-    {% if modulo_actual %}
-      <div class="continuar">
-        <span class="modulo-card__icono" aria-hidden="true"><i class="bi bi-{{ modulo_actual.icono }}"></i></span>
-        <div class="continuar__texto">
-          <p class="continuar__nombre">{{ modulo_actual.nombre }}</p>
-          <div class="modulo-card__progreso">
-            <progress class="barra" max="100" value="{{ modulo_actual.porcentaje }}" aria-label="Progreso del módulo"></progress>
-            <span>{{ modulo_actual.porcentaje }}%</span>
-          </div>
-        </div>
-        <a class="btn-nb btn-nb--primario" href="{% url 'contenido:detalle_modulo' modulo_actual.pk %}">Continuar</a>
-      </div>
-    {% else %}
-      <p class="texto-suave">Aún no hay módulos publicados. Vuelve pronto.</p>
-    {% endif %}
-    <div class="nivel-barra">
-      <div class="nivel-barra__cabecera">
-        <span>Nivel {{ nivel.numero_nivel|default:1 }}</span>
-        {% if siguiente_nivel %}<span>{{ xp_faltante }} XP para el nivel {{ siguiente_nivel.numero_nivel }}</span>{% else %}<span>Nivel máximo</span>{% endif %}
-      </div>
-      <progress class="barra barra--ambar" max="100" value="{{ porcentaje_nivel }}" aria-label="Avance hacia el siguiente nivel"></progress>
+<section class="stats stats--5" aria-label="Resumen de tu aprendizaje">
+  <div class="stat"><span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-fire"></i></span>
+    <div><p class="stat__etiqueta">Racha actual</p><p class="stat__valor">{{ estadisticas.racha_dias }}</p><p class="stat__nota">{% if estadisticas.racha_dias == 1 %}día{% else %}días{% endif %}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-star-fill"></i></span>
+    <div><p class="stat__etiqueta">XP total</p><p class="stat__valor">{{ estadisticas.xp_total }}</p>{% if siguiente_nivel %}<p class="stat__nota">{{ xp_faltante }} para nivel {{ siguiente_nivel.numero_nivel }}</p>{% endif %}</div></div>
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+    <div><p class="stat__etiqueta">Tiempo de práctica</p><p class="stat__valor stat__valor--texto">{{ resumen.tiempo }}</p><p class="stat__nota">estimado</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-bullseye"></i></span>
+    <div><p class="stat__etiqueta">Precisión</p><p class="stat__valor">{{ resumen.precision }} %</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-hand-thumbs-up-fill"></i></span>
+    <div><p class="stat__etiqueta">Señas dominadas</p><p class="stat__valor">{{ resumen.senas_dominadas }}</p><p class="stat__nota">{{ lecciones_completadas }} lecciones</p></div></div>
+</section>
+
+<div class="rejilla-graficos">
+  <section class="tarjeta tarjeta--grafico" aria-labelledby="t-actividad">
+    <div class="seccion-cabecera">
+      <h2 id="t-actividad" class="tarjeta__titulo">Actividad de la semana</h2>
+      <span class="etiqueta">{{ practicas_semana }} intentos</span>
     </div>
+    <div class="grafico"><canvas id="grafico-semana" role="img" aria-label="Intentos y aciertos de los últimos 7 días"></canvas></div>
   </section>
 
-  <section class="tarjeta recompensa" aria-labelledby="titulo-recompensa">
-    <h2 id="titulo-recompensa" class="tarjeta__titulo">Próxima recompensa</h2>
-    {% if proximo_logro %}
-      <span class="recompensa__insignia" aria-hidden="true"><i class="bi bi-{{ proximo_logro.icono|default:'award-fill' }}"></i></span>
-      <p class="recompensa__nombre">{{ proximo_logro.nombre }}</p>
-      <p class="texto-suave">{{ proximo_logro.descripcion|default:"Sigue practicando para desbloquearla." }}</p>
-    {% else %}
-      <span class="recompensa__insignia" aria-hidden="true"><i class="bi bi-trophy-fill"></i></span>
-      <p class="recompensa__nombre">Desbloqueaste todas las insignias</p>
-    {% endif %}
+  <section class="tarjeta" aria-labelledby="t-accesos">
+    <h2 id="t-accesos" class="tarjeta__titulo">Accesos rápidos</h2>
+    <div class="accesos">
+      {% for modulo in accesos %}
+        <a class="acceso" href="{% url 'contenido:detalle_modulo' modulo.pk %}">
+          <span class="acceso__icono" aria-hidden="true"><i class="bi bi-{{ modulo.icono }}"></i></span>
+          <span class="acceso__texto"><strong>{{ modulo.nombre }}</strong><small>{{ modulo.porcentaje }} % dominado</small></span>
+          <progress class="barra" max="100" value="{{ modulo.porcentaje }}" aria-label="Progreso en {{ modulo.nombre }}"></progress>
+        </a>
+      {% endfor %}
+      <a class="acceso acceso--logros" href="{% url 'gamificacion:logros' %}">
+        <span class="acceso__icono" aria-hidden="true"><i class="bi bi-trophy-fill"></i></span>
+        <span class="acceso__texto"><strong>Mis logros</strong><small>{% if proximo_logro %}Próximo: {{ proximo_logro.nombre }}{% else %}¡Todos obtenidos!{% endif %}</small></span>
+      </a>
+    </div>
   </section>
 </div>
 
-<section aria-labelledby="titulo-modulos">
+<section aria-labelledby="t-modulos">
   <div class="seccion-cabecera">
-    <h2 id="titulo-modulos">Módulos</h2>
+    <h2 id="t-modulos">Estado de los módulos</h2>
     <a href="{% url 'contenido:mapa_modulos' %}">Ver todos</a>
   </div>
   <div class="rejilla-modulos">
@@ -82,4 +77,10 @@
     {% endfor %}
   </div>
 </section>
+{{ grafico|json_script:"datos-semana" }}
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="{% static 'js/panel-graficos.js' %}" defer></script>
 {% endblock %}

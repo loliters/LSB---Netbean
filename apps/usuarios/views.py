@@ -1,6 +1,6 @@
 """Vistas de autenticación, recuperación de contraseña y paneles por rol."""
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
@@ -11,12 +11,13 @@ from django.views.decorators.http import require_POST
 
 from apps.contenido import services as contenido_services
 from apps.contenido.models import Modulo
-from apps.core.models import Categoria, Rol
+from apps.core.models import Rol
 from apps.core.utils import leer_json
 
 from . import services
 from .decoradores import rol_requerido
 from .forms import (
+    CambiarPasswordForm,
     LoginForm,
     RecuperarPasswordForm,
     RegistroForm,
@@ -125,38 +126,115 @@ def restablecer_password_view(request, token: str):
     return render(request, "usuarios/restablecer_password.html", {"form": form})
 
 
+def _datos_actividad(actividad: list[dict]) -> dict:
+    return {
+        "dias": [f["etiqueta"] for f in actividad],
+        "intentos": [f["intentos"] for f in actividad],
+        "aciertos": [f["aciertos"] for f in actividad],
+    }
+
+
 @rol_requerido("estudiante")
 def panel_estudiante(request):
-    """Panel del estudiante: XP, racha, nivel y módulos con progreso."""
+    """Dashboard del estudiante: estadísticas, actividad semanal y módulos."""
+    from apps.progreso import services as progreso
+
     contexto = services.resumen_estudiante(request.user)
     modulos = contenido_services.listar_modulos_con_progreso(request.user)
     pendientes = [m for m in modulos if m.porcentaje < 100]
-    contexto["modulo_actual"] = max(pendientes, key=lambda m: m.porcentaje, default=None)
-    contexto["modulos"] = modulos[:6]
+    actividad = progreso.actividad_semanal(request.user)
+    contexto.update({
+        "modulo_actual": max(pendientes, key=lambda m: m.porcentaje, default=None),
+        "modulos": modulos,
+        "accesos": [m for m in modulos if m.nombre in ("Vocales", "Números del 1 al 5")],
+        "resumen": progreso.resumen_usuario(request.user),
+        "practicas_semana": sum(f["intentos"] for f in actividad),
+        "grafico": _datos_actividad(actividad),
+    })
     return render(request, "usuarios/panel_estudiante.html", contexto)
+
+
+def _perfil_cuenta(request):
+    """Perfil administrativo (administrador y profesor): cuenta, rol y contraseña.
+
+    No tiene nivel, XP, racha ni insignias: eso es solo del estudiante.
+    """
+    form = CambiarPasswordForm(request.POST or None, usuario=request.user)
+    if request.method == "POST" and form.is_valid():
+        request.user.set_password(form.cleaned_data["password1"])
+        request.user.save(update_fields=["password"])
+        update_session_auth_hash(request, request.user)  # mantiene la sesión abierta
+        messages.success(request, "Tu contraseña se actualizó correctamente.")
+        return redirect("usuarios:perfil")
+    return render(request, "usuarios/perfil_cuenta.html", {
+        "form": form,
+        "es_administrador": request.user.nombre_rol == "administrador",
+    })
+
+
+@login_required
+def perfil(request):
+    """Perfil: gamificado para el estudiante, administrativo para administrador y profesor."""
+    if request.user.nombre_rol != "estudiante":
+        return _perfil_cuenta(request)
+    from apps.gamificacion import services as gamificacion
+    from apps.progreso import services as progreso
+
+    contexto = services.resumen_estudiante(request.user)
+    insignias = gamificacion.progreso_logros(request.user)
+    contexto.update({
+        "resumen": progreso.resumen_usuario(request.user),
+        "insignias": [i for i in insignias if i["obtenido"]],
+        "pendientes": [i for i in insignias if not i["obtenido"]][:4],
+        "modulos": contenido_services.listar_modulos_con_progreso(request.user),
+        "recientes": progreso.actividad_reciente(request.user),
+    })
+    return render(request, "usuarios/perfil.html", contexto)
 
 
 @rol_requerido("profesor")
 def panel_profesor(request):
-    """Panel del profesor: resumen de contenido."""
+    """Panel del profesor: sus estudiantes, el contenido que asignó y quién está sin actividad."""
+    from . import asignaciones
+
+    avance = asignaciones.avance_estudiantes(request.user)
+    asignado = asignaciones.contenido_asignado_por(request.user)
     return render(request, "usuarios/panel_profesor.html", {
-        "total_categorias": Categoria.objects.filter(activo=True).count(),
+        "avance": avance,
+        "total_estudiantes": len(avance),
+        "sin_actividad": [fila for fila in avance if fila["sin_actividad"]],
+        "dias_sin_actividad": asignaciones.DIAS_SIN_ACTIVIDAD,
+        "contenido_asignado": asignado[:6],
+        "total_asignaciones": asignado.count(),
         "total_modulos": Modulo.objects.filter(estado=True).count(),
-        "total_estudiantes": Usuario.objects.filter(rol__nombre_rol__iexact="estudiante").count(),
+        "estudiantes_del_sistema": asignaciones.estudiantes_activos().count(),
     })
 
 
 @rol_requerido("administrador")
 def panel_admin(request):
-    """Panel del administrador: métricas globales."""
+    """Panel del administrador: métricas globales, estudiantes y control de módulos."""
+    from django.db.models import Count
+
+    from apps.progreso import services as progreso
+
     usuarios = Usuario.objects.all()
     roles = {r.nombre_rol.lower(): r.pk for r in Rol.objects.all()}
+    estudiantes = (
+        usuarios.filter(rol__nombre_rol__iexact="estudiante")
+        .select_related("estadisticasusuario")
+        .order_by("-ultimo_acceso", "apellido")[:100]
+    )
     return render(request, "usuarios/panel_admin.html", {
         "id_rol_estudiante": roles.get("estudiante"),
         "id_rol_profesor": roles.get("profesor"),
         "total_usuarios": usuarios.count(),
         "total_estudiantes": usuarios.filter(rol__nombre_rol__iexact="estudiante").count(),
         "total_profesores": usuarios.filter(rol__nombre_rol__iexact="profesor").count(),
-        "total_categorias": Categoria.objects.count(),
         "total_modulos": Modulo.objects.count(),
+        "sistema": progreso.resumen_sistema(),
+        "estudiantes": estudiantes,
+        "modulos_control": Modulo.objects.select_related("categoria")
+        .annotate(total_senas=Count("lecciones__senas", distinct=True)).order_by("categoria__nombre", "orden"),
+        "grafico": _datos_actividad(progreso.actividad_global(14)),
     })

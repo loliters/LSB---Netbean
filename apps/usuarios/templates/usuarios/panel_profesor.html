@@ -1,19 +1,87 @@
 {% extends "base.html" %}
+{% load static %}
 {% block titulo %}Panel del profesor · Net Bean{% endblock %}
 {% block titulo_pagina %}Inicio{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="{% static 'css/asignaciones.css' %}?v=1">{% endblock %}
 
 {% block contenido %}
-<header class="saludo">
-  <h1>Hola, {{ user.nombre }}</h1>
-  <p>Revisa el contenido publicado y el avance de tus estudiantes.</p>
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Hola, {{ user.nombre }}</h1>
+    <p class="texto-suave">Monitorea el avance de tus estudiantes y decide qué contenido ve cada uno.</p>
+  </div>
+  <div class="acciones-fila">
+    <a class="btn-nb btn-nb--secundario" href="{% url 'usuarios:profesor_estudiantes' %}"><i class="bi bi-mortarboard" aria-hidden="true"></i>Mis estudiantes</a>
+    <a class="btn-nb btn-nb--primario" href="{% url 'reportes:dashboard' %}"><i class="bi bi-bar-chart-line" aria-hidden="true"></i>Reportes</a>
+  </div>
 </header>
-<section class="stats stats--3" aria-label="Resumen del contenido">
-  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-bookmark-fill"></i></span>
-    <div><p class="stat__etiqueta">Categorías activas</p><p class="stat__valor">{{ total_categorias }}</p></div></div>
-  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-collection-fill"></i></span>
+
+<section class="stats" aria-label="Resumen">
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-mortarboard-fill"></i></span>
+    <div><p class="stat__etiqueta">Mis estudiantes</p><p class="stat__valor">{{ total_estudiantes }}</p><p class="stat__nota">de {{ estudiantes_del_sistema }} en el sistema</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-moon-stars-fill"></i></span>
+    <div><p class="stat__etiqueta">Sin actividad</p><p class="stat__valor">{{ sin_actividad|length }}</p><p class="stat__nota">en {{ dias_sin_actividad }} días</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-list-check"></i></span>
+    <div><p class="stat__etiqueta">Contenido asignado</p><p class="stat__valor">{{ total_asignaciones }}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-collection-fill"></i></span>
     <div><p class="stat__etiqueta">Módulos activos</p><p class="stat__valor">{{ total_modulos }}</p></div></div>
-  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-mortarboard-fill"></i></span>
-    <div><p class="stat__etiqueta">Estudiantes</p><p class="stat__valor">{{ total_estudiantes }}</p></div></div>
 </section>
-<a class="btn-nb btn-nb--primario" href="{% url 'contenido:mapa_modulos' %}">Ver módulos</a>
+
+{% if not total_estudiantes %}
+  <div class="estado-vacio">
+    <i class="bi bi-mortarboard" aria-hidden="true"></i>
+    <h2>Aún no monitoreas a ningún estudiante</h2>
+    <p>Hay {{ estudiantes_del_sistema }} estudiante{{ estudiantes_del_sistema|pluralize }} en el sistema. Elige a quiénes quieres seguir.</p>
+    <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:profesor_estudiantes' %}">Elegir estudiantes</a>
+  </div>
+{% else %}
+<section aria-labelledby="t-avance">
+  <div class="seccion-cabecera"><h2 id="t-avance">Avance por estudiante</h2></div>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr>
+        <th scope="col">Estudiante</th><th scope="col">Señas dominadas</th><th scope="col" class="tabla__numero">Acierto</th>
+        <th scope="col">Última práctica</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acciones</span></th>
+      </tr></thead>
+      <tbody>
+        {% for f in avance %}
+          <tr{% if f.sin_actividad %} class="tabla__fila--alerta"{% endif %}>
+            <td><div class="tabla__usuario"><span class="usuario-chip__avatar" aria-hidden="true">{{ f.estudiante.iniciales }}</span><div><strong>{{ f.estudiante.nombre_completo }}</strong><span>{% if f.con_contenido %}Con contenido asignado{% else %}Ve todo el catálogo{% endif %}</span></div></div></td>
+            <td><div class="avance-fila"><progress class="barra" max="100" value="{{ f.porcentaje }}" aria-label="Avance de {{ f.estudiante.nombre_completo }}"></progress><small>{{ f.dominadas }}/{{ f.total }}</small></div></td>
+            <td class="tabla__numero">{% if f.intentos %}{{ f.tasa }} %{% else %}—{% endif %}</td>
+            <td>{{ f.ultima|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+            <td>{% if f.sin_actividad %}<span class="etiqueta etiqueta--aviso">Sin actividad</span>{% else %}<span class="estado estado--activo">Activo</span>{% endif %}</td>
+            <td><div class="tabla__acciones"><a class="btn-nb btn-nb--fantasma btn-nb--chico" href="{% url 'reportes:dashboard' %}?estudiante={{ f.estudiante.pk }}">Ver reporte</a></div></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="rejilla-panel" style="margin-top: 1.5rem">
+  <section class="tarjeta" aria-labelledby="t-sin">
+    <h2 id="t-sin" class="tarjeta__titulo">Sin actividad en {{ dias_sin_actividad }} días</h2>
+    {% if sin_actividad %}
+      <ul class="lista-simple">
+        {% for f in sin_actividad %}<li><span>{{ f.estudiante.nombre_completo }}</span><small>{% if f.ultima %}última vez {{ f.ultima|date:"d/m" }}{% else %}nunca practicó{% endif %}</small></li>{% endfor %}
+      </ul>
+    {% else %}
+      <p class="texto-suave">Todos tus estudiantes practicaron esta semana.</p>
+    {% endif %}
+  </section>
+  <section class="tarjeta" aria-labelledby="t-asig">
+    <h2 id="t-asig" class="tarjeta__titulo">Contenido que asignaste</h2>
+    {% if contenido_asignado %}
+      <ul class="lista-simple">
+        {% for a in contenido_asignado %}<li><span><span class="etiqueta">{{ a.tipo }}</span> {{ a.nombre_objetivo }}</span><small>{{ a.estudiante.nombre }}</small></li>{% endfor %}
+      </ul>
+      <a class="btn-nb btn-nb--secundario btn-nb--chico" style="margin-top: 0.9rem" href="{% url 'usuarios:profesor_contenido' %}">Ver todo</a>
+    {% else %}
+      <p class="texto-suave">Todavía no asignaste contenido: tus estudiantes ven todo el catálogo.</p>
+      <a class="btn-nb btn-nb--secundario btn-nb--chico" style="margin-top: 0.9rem" href="{% url 'usuarios:profesor_contenido' %}">Asignar contenido</a>
+    {% endif %}
+  </section>
+</div>
+{% endif %}
 {% endblock %}

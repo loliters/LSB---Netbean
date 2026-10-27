@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block titulo %}Mi perfil · Net Bean{% endblock %}
+{% block titulo_pagina %}Perfil{% endblock %}
+
+{% block contenido %}
+<section class="perfil-hero" aria-label="Datos del perfil">
+  <div class="perfil-hero__identidad">
+    <span class="perfil-hero__avatar" aria-hidden="true">{{ user.iniciales }}</span>
+    <div>
+      <h1>{{ user.nombre_completo }}</h1>
+      <p class="perfil-hero__correo"><i class="bi bi-envelope" aria-hidden="true"></i> {{ user.correo }}</p>
+      <p class="perfil-hero__meta">
+        <span class="perfil-hero__rol">{{ user.rol.nombre_rol }}</span>
+        <span>Miembro desde el {{ user.fecha_registro|date:"d/m/Y" }}</span>
+        {% if user.ultimo_acceso %}<span>Último acceso {{ user.ultimo_acceso|date:"d/m/Y H:i" }}</span>{% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="perfil-hero__nivel">
+    <div class="perfil-hero__nivel-cabecera">
+      <span class="perfil-hero__nivel-numero">{{ nivel.numero_nivel|default:1 }}</span>
+      <div>
+        <p class="perfil-hero__nivel-etiqueta">Nivel</p>
+        <p class="perfil-hero__nivel-nombre">{{ nivel.nombre_nivel|default:"Principiante" }}</p>
+      </div>
+    </div>
+    <progress class="barra barra--ambar barra--sobre-oscuro" max="100" value="{{ porcentaje_nivel }}" aria-label="Avance al siguiente nivel"></progress>
+    <p class="perfil-hero__nivel-nota">{% if siguiente_nivel %}{{ xp_faltante }} XP para «{{ siguiente_nivel.nombre_nivel }}»{% else %}Nivel máximo alcanzado{% endif %}</p>
+  </div>
+</section>
+
+<section class="stats stats--5" aria-label="Estadísticas">
+  <div class="stat"><span class="stat__icono stat__icono--ambar" aria-hidden="true"><i class="bi bi-star-fill"></i></span><div><p class="stat__etiqueta">XP total</p><p class="stat__valor">{{ estadisticas.xp_total }}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--fuego" aria-hidden="true"><i class="bi bi-fire"></i></span><div><p class="stat__etiqueta">Racha</p><p class="stat__valor">{{ estadisticas.racha_dias }}</p><p class="stat__nota">{% if estadisticas.racha_dias == 1 %}día{% else %}días{% endif %}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-camera-video-fill"></i></span><div><p class="stat__etiqueta">Prácticas</p><p class="stat__valor">{{ estadisticas.total_practicas }}</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--verde" aria-hidden="true"><i class="bi bi-bullseye"></i></span><div><p class="stat__etiqueta">Precisión</p><p class="stat__valor">{{ resumen.precision }} %</p></div></div>
+  <div class="stat"><span class="stat__icono stat__icono--azul" aria-hidden="true"><i class="bi bi-clock-history"></i></span><div><p class="stat__etiqueta">Tiempo</p><p class="stat__valor stat__valor--texto">{{ resumen.tiempo }}</p></div></div>
+</section>
+
+<div class="perfil-rejilla">
+  <div class="perfil-columna">
+    <section class="tarjeta" aria-labelledby="t-insignias">
+      <div class="tarjeta__cabecera">
+        <h2 id="t-insignias" class="tarjeta__titulo">Insignias ganadas <span class="etiqueta">{{ insignias|length }}</span></h2>
+        <a href="{% url 'gamificacion:logros' %}">Ver todas</a>
+      </div>
+      {% if insignias %}
+        <ul class="medallas">
+          {% for item in insignias %}
+            <li class="medalla medalla--{{ item.logro.tipo_logro.metrica }}">
+              <span class="medalla__icono" aria-hidden="true"><i class="bi bi-{{ item.logro.icono|default:'award-fill' }}"></i></span>
+              <span class="medalla__nombre">{{ item.logro.nombre }}</span>
+              <span class="medalla__fecha">{{ item.fecha|date:"d/m/Y" }} · +{{ item.logro.xp_bonus }} XP</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="estado-vacio estado-vacio--compacto"><i class="bi bi-trophy" aria-hidden="true"></i><p>Practica tu primera seña para ganar «Primer paso».</p></div>
+      {% endif %}
+    </section>
+
+    <section class="tarjeta" aria-labelledby="t-modulos">
+      <h2 id="t-modulos" class="tarjeta__titulo">Progreso por módulo</h2>
+      <ul class="progreso-modulos">
+        {% for modulo in modulos %}
+          <li>
+            <span class="progreso-modulos__nombre"><i class="bi bi-{{ modulo.icono }}" aria-hidden="true"></i>{{ modulo.nombre }}</span>
+            <progress class="barra" max="100" value="{{ modulo.porcentaje }}" aria-label="Progreso en {{ modulo.nombre }}"></progress>
+            <span class="progreso-modulos__valor">{{ modulo.porcentaje }} %</span>
+          </li>
+        {% empty %}
+          <li class="texto-suave">Aún no hay módulos.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <div class="perfil-columna">
+    {% if pendientes %}
+    <section class="tarjeta" aria-labelledby="t-proximas">
+      <h2 id="t-proximas" class="tarjeta__titulo">Próximas insignias</h2>
+      <ul class="progreso-modulos progreso-modulos--compacto">
+        {% for item in pendientes %}
+          <li>
+            <span class="progreso-modulos__nombre"><i class="bi bi-{{ item.logro.icono|default:'award' }}" aria-hidden="true"></i>{{ item.logro.nombre }}</span>
+            <progress class="barra barra--ambar" max="100" value="{{ item.porcentaje }}" aria-label="Avance hacia {{ item.logro.nombre }}"></progress>
+            <span class="progreso-modulos__valor">{{ item.actual }}/{{ item.logro.meta_valor }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section class="tarjeta" aria-labelledby="t-reciente">
+      <h2 id="t-reciente" class="tarjeta__titulo">Actividad reciente</h2>
+      <ul class="actividad">
+        {% for practica in recientes %}
+          <li class="actividad__fila">
+            <span class="actividad__sena{% if practica.es_correcta %} actividad__sena--ok{% endif %}">{{ practica.sena.nombre }}</span>
+            <span class="actividad__texto">
+              <strong>{{ practica.sena.leccion.modulo.nombre }}</strong>
+              <small>{{ practica.fecha_practica|date:"d/m H:i" }} · {{ practica.puntaje_obtenido|floatformat:0 }} %</small>
+            </span>
+            {% if practica.xp_ganado %}
+              <span class="actividad__xp">+{{ practica.xp_ganado }} XP</span>
+            {% elif practica.es_correcta %}
+              <span class="actividad__xp actividad__xp--repaso" title="Seña ya dominada: no suma XP">Repaso</span>
+            {% else %}
+              <span class="actividad__xp actividad__xp--nulo">Sin XP</span>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="texto-suave">Todavía no hay prácticas registradas.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

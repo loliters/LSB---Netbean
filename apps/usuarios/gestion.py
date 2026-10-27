@@ -81,7 +81,8 @@ class UsuarioCrearView(SoloAdministradorMixin, CreateView):
     @transaction.atomic
     def form_valid(self, form):
         respuesta = super().form_valid(form)
-        EstadisticasUsuario.objects.get_or_create(usuario=self.object)
+        if self.object.nombre_rol == "estudiante":  # racha, XP y nivel son solo del estudiante
+            EstadisticasUsuario.objects.get_or_create(usuario=self.object)
         messages.success(self.request, f"Usuario {self.object.nombre_completo} creado.")
         return respuesta
 

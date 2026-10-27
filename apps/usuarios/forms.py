@@ -145,6 +145,31 @@ class RestablecerPasswordForm(ConfirmacionContrasenaMixin, forms.Form):
         return datos
 
 
+class CambiarPasswordForm(ConfirmacionContrasenaMixin, forms.Form):
+    """Cambio de contraseña desde el perfil (pide la contraseña actual)."""
+
+    actual = _campo_contrasena("Contraseña actual", "current-password")
+    password1 = _campo_contrasena("Nueva contraseña", "new-password", AYUDA_CONTRASENA)
+    password2 = _campo_contrasena("Confirmar nueva contraseña", "new-password")
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.usuario = usuario
+
+    def clean_actual(self):
+        actual = self.cleaned_data.get("actual", "")
+        if not self.usuario.check_password(actual):
+            raise ValidationError("La contraseña actual no es correcta.")
+        return actual
+
+    def clean(self):
+        datos = super().clean()
+        if datos.get("password1") and datos.get("password1") == datos.get("actual"):
+            self.add_error("password1", "La nueva contraseña debe ser distinta de la actual.")
+        self._validar_confirmacion(self.usuario)
+        return datos
+
+
 class UsuarioGestionForm(forms.ModelForm):
     """Edición de usuarios desde el panel del administrador (HU-09)."""
 

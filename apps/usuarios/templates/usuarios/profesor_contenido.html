@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Asignar contenido · Net Bean{% endblock %}
+{% block titulo_pagina %}Asignar contenido{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="{% static 'css/asignaciones.css' %}?v=1">{% endblock %}
+
+{% block contenido %}
+<header class="catalogo-cabecera">
+  <div>
+    <h1>Asignar contenido</h1>
+    <p class="texto-suave">Decide qué módulos, lecciones, letras o números ve cada uno de tus estudiantes.</p>
+  </div>
+  <a class="btn-nb btn-nb--secundario" href="{% url 'contenido:gestion_modulos' %}"><i class="bi bi-journal-plus" aria-hidden="true"></i>Editar contenido</a>
+</header>
+
+{% if total_estudiantes %}
+<form method="post" class="formulario-asignar" novalidate>
+  {% csrf_token %}
+  <section class="tarjeta" aria-labelledby="t-quienes">
+    <h2 id="t-quienes" class="tarjeta__titulo">1. ¿A quién?</h2>
+    <div class="lista-checks" role="group" aria-labelledby="t-quienes">
+      {% for check in form.estudiantes %}
+        <label class="casilla" for="{{ check.id_for_label }}">{{ check.tag }}<span>{{ check.choice_label }}</span></label>
+      {% endfor %}
+    </div>
+    {% for error in form.estudiantes.errors %}<p class="campo__error" role="alert">{{ error }}</p>{% endfor %}
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-que">
+    <h2 id="t-que" class="tarjeta__titulo">2. ¿Qué?</h2>
+    <div class="campo{% if form.objetivo.errors %} campo--error{% endif %}">
+      <label class="campo__etiqueta" for="{{ form.objetivo.id_for_label }}">{{ form.objetivo.label }}</label>
+      {{ form.objetivo }}
+      {% for error in form.objetivo.errors %}<p class="campo__error" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    <button type="submit" class="btn-nb btn-nb--primario btn-nb--bloque"><i class="bi bi-check2-circle" aria-hidden="true"></i>Asignar</button>
+    <div class="aviso-regla" role="note" style="margin: 1rem 0 0">
+      <i class="bi bi-lightbulb-fill" aria-hidden="true"></i>
+      <p><strong>Cómo funciona:</strong> si un estudiante no tiene nada asignado, ve todo el contenido. En cuanto le asignas algo, ve <em>solo</em> lo asignado. Asignar un módulo incluye todas sus lecciones.</p>
+    </div>
+  </section>
+</form>
+{% else %}
+<div class="estado-vacio">
+  <i class="bi bi-mortarboard" aria-hidden="true"></i>
+  <h2>Aún no monitoreas a ningún estudiante</h2>
+  <p>Primero asígnate estudiantes y después podrás decidir qué contenido ve cada uno.</p>
+  <a class="btn-nb btn-nb--primario" href="{% url 'usuarios:profesor_estudiantes' %}">Elegir estudiantes</a>
+</div>
+{% endif %}
+
+<section aria-labelledby="t-asignado">
+  <div class="seccion-cabecera"><h2 id="t-asignado">Contenido que asignaste</h2></div>
+  {% if asignaciones %}
+    <div class="tabla-contenedor">
+      <table class="tabla">
+        <thead><tr><th scope="col">Estudiante</th><th scope="col">Tipo</th><th scope="col">Contenido</th><th scope="col">Desde</th><th scope="col"><span class="visually-hidden">Acciones</span></th></tr></thead>
+        <tbody>
+          {% for a in asignaciones %}
+            <tr>
+              <td><strong>{{ a.estudiante.nombre_completo }}</strong></td>
+              <td><span class="etiqueta">{{ a.tipo }}</span></td>
+              <td>{{ a.nombre_objetivo }}</td>
+              <td>{{ a.fecha_asignacion|date:"d/m/Y" }}</td>
+              <td><div class="tabla__acciones">
+                <form method="post" action="{% url 'usuarios:profesor_contenido_quitar' a.pk %}" data-confirmar="¿Quitar «{{ a.nombre_objetivo }}» a {{ a.estudiante.nombre_completo }}?">
+                  {% csrf_token %}<button type="submit" class="btn-nb btn-nb--peligro btn-nb--chico">Quitar</button>
+                </form></div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="texto-suave">Todavía no asignaste contenido: tus estudiantes ven todo el catálogo.</p>
+  {% endif %}
+</section>
+{% endblock %}
