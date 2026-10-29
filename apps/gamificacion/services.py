@@ -16,7 +16,7 @@ from .models import Logro, UsuarioLogro
 
 
 def xp_por_acierto() -> int:
-    return getattr(settings, "XP_POR_ACIERTO", 30)
+    return getattr(settings, "XP_POR_ACIERTO", 30)# constante
 
 
 def umbral_efectivo(sena) -> int:
@@ -30,7 +30,7 @@ def normalizar_letra(texto: str | None) -> str:
 
 
 def a_puntaje(confianza: float) -> Decimal:
-    """Convierte la confianza (0-1) en puntaje porcentual con 2 decimales."""
+    """Confianza (0-1) en puntaje porcentual con 2 decimales."""
     acotada = min(max(float(confianza or 0), 0.0), 1.0)
     return Decimal(str(round(acotada * 100, 2)))
 

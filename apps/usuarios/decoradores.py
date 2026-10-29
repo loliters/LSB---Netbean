@@ -8,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 
 
 def rol_requerido(*roles: str):
-    """Permite el acceso solo a los roles indicados (sin distinguir mayúsculas)."""
+    """Acceso solo a los roles indicados"""
     permitidos = {rol.lower() for rol in roles}
 
     def decorador(vista):
