@@ -203,10 +203,10 @@ Agrega tus capturas en docs/img/ y quita este comentario:
 | Integrante | Rol XP |
 |---|---|
 | Cecilia Belen Pary Tarifa | Programadora |
-| Cecilia Belen Pary Tarifa | Cliente / Product Owner |
-| Cecilia Belen Pary Tarifa| Coach XP |
-| Cecilia Belen Pary Tarifa | Tester |
-|  Cecilia Belen Pary Tarifa| Diseñadora / Analista |
+| [Nombre completo] | Cliente / Product Owner |
+| [Nombre completo] | Coach XP |
+| [Nombre completo] | Tester |
+| [Nombre completo] | Diseñadora / Analista |
 
 Docente: M.Sc. Lic. Georgina Aruquipa G.
 
