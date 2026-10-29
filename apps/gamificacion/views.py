@@ -66,7 +66,7 @@ def progreso(request):
 
 @rol_requerido("estudiante")
 def logros(request):
-    """Pantalla «Mis logros» con insignias obtenidas y avance (HU-11)."""
+    """Pantalla logros con insignias obtenidas y avance (HU-11)."""
     items = services.progreso_logros(request.user)
     obtenidas = [item for item in items if item["obtenido"]]
     pendientes = [item for item in items if not item["obtenido"]]
