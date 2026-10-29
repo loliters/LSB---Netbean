@@ -27,8 +27,6 @@ Sistema web de traducción de lenguaje de señas que funciona como **herramienta
 
 Proyecto de **Proyecto de Sistemas I** · Universidad Privada del Valle · Ingeniería de Sistemas Informáticos · gestión 2-2026, desarrollado con la metodología **XP** (Extreme Programming).
 
-> [!IMPORTANT]
-> El modelo actual es un **prototipo entrenado con Lengua de Señas Mexicana (LSM)**, no con Lengua de Señas Boliviana. Algunas letras pueden diferir. El siguiente paso previsto es entrenar un modelo propio con un dataset de LSB (ver [Limitaciones](#-limitaciones-y-próximos-pasos)).
 
 ## ✨ Funcionalidades
 
