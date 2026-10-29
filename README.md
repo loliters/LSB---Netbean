@@ -14,7 +14,6 @@ Una red neuronal convolucional evalúa tu seña al instante y te dice cómo mejo
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3FN-4169E1?logo=postgresql&logoColor=white)
 ![TensorFlow Lite](https://img.shields.io/badge/TensorFlow%20Lite-EfficientNetB2-FF6F00?logo=tensorflow&logoColor=white)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-HandLandmarker-0097A7)
-
 [Funcionalidades](#-funcionalidades) · [Cómo funciona](#-cómo-funciona) · [Inicio rápido](#-inicio-rápido) · [Documentación](#-documentación) · [Equipo](#-equipo)
 
 </div>
