@@ -78,7 +78,7 @@ sequenceDiagram
     Note over B: 70 % o más durante 2 s
     B->>D: POST /gamificacion/evaluar/
     D->>IA: vuelve a predecir (anti trampa)
-    D->>DB: guarda la práctica; un Signal suma XP y racha
+    D->>DB: guarda la práctica - un Signal suma XP y rach
     D-->>B: resultado, XP y logros nuevos
 ```
 
