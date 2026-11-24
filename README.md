@@ -8,11 +8,11 @@
 Una red neuronal convolucional evalúa tu seña al instante y te dice cómo mejorarla.
 
 [![CI](https://github.com/loliters/LSB---Netbean/actions/workflows/ci.yml/badge.svg)](https://github.com/loliters/LSB---Netbean/actions/workflows/ci.yml)
-![Versión](https://img.shields.io/badge/versi%C3%B3n-1.0.0-1E5BB8)
+![Version](https://img.shields.io/badge/Version-1.0.0-1E5BB8)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-ORM%20%C2%B7%20Signals-092E20?logo=django&logoColor=white)
+![Django](https://img.shields.io/badge/Django-ORM_y_Signals-092E20?logo=django&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3FN-4169E1?logo=postgresql&logoColor=white)
-![TensorFlow Lite](https://img.shields.io/badge/TensorFlow%20Lite-EfficientNetB2-FF6F00?logo=tensorflow&logoColor=white)
+![TensorFlow Lite](https://img.shields.io/badge/TensorFlow_Lite-EfficientNetB2-FF6F00?logo=tensorflow&logoColor=white)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-HandLandmarker-0097A7)
 
 [Funcionalidades](#-funcionalidades) · [Cómo funciona](#-cómo-funciona) · [Inicio rápido](#-inicio-rápido) · [Documentación](#-documentación) · [Equipo](#-equipo)
@@ -78,7 +78,7 @@ sequenceDiagram
     Note over B: 70 % o más durante 2 s
     B->>D: POST /gamificacion/evaluar/
     D->>IA: vuelve a predecir (anti trampa)
-    D->>DB: guarda la práctica - un Signal suma XP y rach
+    D->>DB: guarda la práctica - un Signal suma XP y racha
     D-->>B: resultado, XP y logros nuevos
 ```
 
@@ -203,10 +203,10 @@ Agrega tus capturas en docs/img/ y quita este comentario:
 | Integrante | Rol XP |
 |---|---|
 | Cecilia Belen Pary Tarifa | Programadora |
-| [Nombre completo] | Cliente / Product Owner |
-| [Nombre completo] | Coach XP |
-| [Nombre completo] | Tester |
-| [Nombre completo] | Diseñadora / Analista |
+| Cecilia Belen Pary Tarifa | Cliente / Product Owner |
+| Cecilia Belen Pary Tarifa | Coach XP |
+| Cecilia Belen Pary Tarifa | Tester |
+| Cecilia Belen Pary Tarifa | Diseñadora / Analista |
 
 Docente: M.Sc. Lic. Georgina Aruquipa G.
 
